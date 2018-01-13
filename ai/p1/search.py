@@ -84,28 +84,44 @@ def depthFirstSearch(problem):
     """
 
     stack = util.Stack()
-    stack.push(problem.getStartState())
-    parents = { problem.getStartState() : None }
-    actions = { problem.getStartState() : None }
+    start = problem.getStartState()
+    stack.push(start)
+    # trace: node label -> (parent label, action)
+    trace = { start : (None, None) }
     visited = set()
     while not stack.isEmpty():
         cur = stack.pop()
-        print cur
         visited.add(cur)
         if problem.isGoalState(cur):
-            return construct_path(parents, actions, cur)
+            return construct_path(trace, cur)
         for child in problem.getSuccessors(cur):
             if child[0] not in visited:
-                parents[child[0]] = cur
-                actions[child[0]] = child[1]
+                trace[child[0]] = (cur, child[1])
                 stack.push(child[0])
     return []
 
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    
+    queue = util.Queue()
+    start = problem.getStartState()
+    queue.push(start)
+    # trace: node label -> (parent label, action)
+    trace = { start : (None, None) }
+    visited = set([start])
+    while not queue.isEmpty():
+        cur = queue.pop()
+        if problem.isGoalState(cur):
+            return construct_path(trace, cur)
+        for child in problem.getSuccessors(cur):
+            if child[0] in visited:
+                continue
+            queue.push(child[0])
+            visited.add(child[0])
+            trace[child[0]] = (cur, child[1])
+    return []
+
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
@@ -124,14 +140,14 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     "*** YOUR CODE HERE ***"
     util.raiseNotDefined()
 
-def construct_path(parents, actions, goal):
+def construct_path(trace, goal):
     cur_node = goal
-    cur_action = actions[goal]
+    cur_action = trace[goal][1]
     path = []
-    while parents[cur_node] is not None:
+    while trace[cur_node][0] is not None:
         path.append(cur_action)
-        cur_node = parents[cur_node]
-        cur_action = actions[cur_node]
+        cur_node = trace[cur_node][0]
+        cur_action = trace[cur_node][1]
     path.reverse()
     return path
 
