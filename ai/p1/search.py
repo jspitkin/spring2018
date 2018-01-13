@@ -83,50 +83,70 @@ def depthFirstSearch(problem):
     understand the search problem that is being passed in:
     """
 
-    stack = util.Stack()
+    frontier = util.Stack()
     start = problem.getStartState()
-    stack.push(start)
+    frontier.push(start)
     # trace: node label -> (parent label, action)
     trace = { start : (None, None) }
-    visited = set()
-    while not stack.isEmpty():
-        cur = stack.pop()
-        visited.add(cur)
+    explored = set()
+    while not frontier.isEmpty():
+        cur = frontier.pop()
         if problem.isGoalState(cur):
             return construct_path(trace, cur)
+        explored.add(cur)
         for child in problem.getSuccessors(cur):
-            if child[0] not in visited:
+            if child[0] not in explored:
                 trace[child[0]] = (cur, child[1])
-                stack.push(child[0])
+                frontier.push(child[0])
     return []
 
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     
-    queue = util.Queue()
+    frontier= util.Queue()
     start = problem.getStartState()
-    queue.push(start)
+    frontier.push(start)
     # trace: node label -> (parent label, action)
     trace = { start : (None, None) }
-    visited = set([start])
-    while not queue.isEmpty():
-        cur = queue.pop()
+    explored = set([start])
+    while not frontier.isEmpty():
+        cur = frontier.pop()
         if problem.isGoalState(cur):
             return construct_path(trace, cur)
         for child in problem.getSuccessors(cur):
-            if child[0] in visited:
+            if child[0] in explored:
                 continue
-            queue.push(child[0])
-            visited.add(child[0])
+            frontier.push(child[0])
+            explored.add(child[0])
             trace[child[0]] = (cur, child[1])
     return []
 
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+
+    frontier  = util.PriorityQueue()
+    start = problem.getStartState()
+    frontier.push(start, 0)
+    # trace: node label -> (parent label, action)
+    trace = { start : (None, None) }
+    path_cost = { start : 0 }
+    explored = set()
+    while not frontier.isEmpty():
+        cur = frontier.pop()
+        if problem.isGoalState(cur):
+            return construct_path(trace, cur)
+        explored.add(cur)
+        for child in problem.getSuccessors(cur):
+            if child[0] not in explored:
+                cost = path_cost[cur] + child[2]
+                if child[0] not in path_cost or cost < path_cost[child[0]]:
+                    path_cost[child[0]] = cost
+                    trace[child[0]] = (cur, child[1])
+                    frontier.update(child[0], cost)
+    return []
+    
 
 def nullHeuristic(state, problem=None):
     """
