@@ -89,6 +89,7 @@ def depthFirstSearch(problem):
     # trace: node label -> (parent label, action)
     trace = { start : (None, None) }
     explored = set()
+
     while not frontier.isEmpty():
         cur = frontier.pop()
         if problem.isGoalState(cur):
@@ -110,6 +111,7 @@ def breadthFirstSearch(problem):
     # trace: node label -> (parent label, action)
     trace = { start : (None, None) }
     explored = set([start])
+
     while not frontier.isEmpty():
         cur = frontier.pop()
         if problem.isGoalState(cur):
@@ -133,6 +135,7 @@ def uniformCostSearch(problem):
     trace = { start : (None, None) }
     path_cost = { start : 0 }
     explored = set()
+
     while not frontier.isEmpty():
         cur = frontier.pop()
         if problem.isGoalState(cur):
@@ -157,8 +160,27 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+
+    frontier = util.PriorityQueue()
+    start = problem.getStartState()
+    g = { start : 0 }
+    explored = set()
+    # trace: node label -> (parent label, action)
+    trace = { start : (None, None) }
+    frontier.push(start, g[start] + heuristic(start, problem))
+    while not frontier.isEmpty():
+        cur = frontier.pop()
+        if problem.isGoalState(cur):
+            return construct_path(trace, cur)
+        explored.add(cur)
+        for child in problem.getSuccessors(cur):
+            if child[0] not in explored:
+                cost = g[cur] + child[2] + heuristic(child[0], problem)
+                if child[0] not in g or cost < g[child[0]]:
+                    g[child[0]] = g[cur] + child[2]
+                    trace[child[0]] = (cur, child[1])
+                    frontier.update(child[0], cost)
+    return []
 
 def construct_path(trace, goal):
     cur_node = goal
