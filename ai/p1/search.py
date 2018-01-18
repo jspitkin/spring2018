@@ -73,83 +73,62 @@ def tinyMazeSearch(problem):
     return  [s, s, w, s, w, w, s, w]
 
 def depthFirstSearch(problem):
-    """
-    Search the deepest nodes in the search tree first.
-
-    Your search algorithm needs to return a list of actions that reaches the
-    goal. Make sure to implement a graph search algorithm.
-
-    To get started, you might want to try some of these simple commands to
-    understand the search problem that is being passed in:
-    """
-
+    """ Search the deepest nodes in the search tree first. """
     frontier = util.Stack()
     start = problem.getStartState()
-    frontier.push(start)
-    # trace: node label -> (parent label, action)
-    trace = { start : (None, None) }
+    # frontier -> (node label, actions)
+    frontier.push((start, []))
     explored = set()
-
     while not frontier.isEmpty():
-        cur = frontier.pop()
+        cur, actions = frontier.pop()
         if problem.isGoalState(cur):
-            return construct_path(trace, cur)
+            return actions
         explored.add(cur)
         for child in problem.getSuccessors(cur):
             if child[0] not in explored:
-                trace[child[0]] = (cur, child[1])
-                frontier.push(child[0])
+                frontier.push((child[0], actions + [child[1]]))
     return []
 
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
-    
     frontier= util.Queue()
     start = problem.getStartState()
-    frontier.push(start)
-    # trace: node label -> (parent label, action)
-    trace = { start : (None, None) }
+    # frontier -> (node label, actions)
+    frontier.push((start, []))
     explored = set([start])
-
     while not frontier.isEmpty():
-        cur = frontier.pop()
+        cur, actions = frontier.pop()
         if problem.isGoalState(cur):
-            return construct_path(trace, cur)
+            return actions
         for child in problem.getSuccessors(cur):
             if child[0] in explored:
                 continue
-            frontier.push(child[0])
+            frontier.push((child[0], actions + [child[1]]))
             explored.add(child[0])
-            trace[child[0]] = (cur, child[1])
     return []
 
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
-
     frontier  = util.PriorityQueue()
     start = problem.getStartState()
-    frontier.push(start, 0)
-    # trace: node label -> (parent label, action)
-    trace = { start : (None, None) }
+    # frontier -> (node label, actions)
+    frontier.push((start, []), 0)
     path_cost = { start : 0 }
     explored = set()
-
     while not frontier.isEmpty():
-        cur = frontier.pop()
+        cur, actions = frontier.pop()
         if problem.isGoalState(cur):
-            return construct_path(trace, cur)
+            return actions
         explored.add(cur)
         for child in problem.getSuccessors(cur):
             if child[0] not in explored:
                 cost = path_cost[cur] + child[2]
                 if child[0] not in path_cost or cost < path_cost[child[0]]:
                     path_cost[child[0]] = cost
-                    trace[child[0]] = (cur, child[1])
-                    frontier.update(child[0], cost)
+                    frontier.update((child[0], actions + [child[1]]), cost)
     return []
-    
 
 def nullHeuristic(state, problem=None):
     """
@@ -165,33 +144,20 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     start = problem.getStartState()
     g = { start : 0 }
     explored = set()
-    # trace: node label -> (parent label, action)
-    trace = { start : (None, None) }
-    frontier.push(start, g[start] + heuristic(start, problem))
+    # frontier -> (node label, actions)
+    frontier.push((start, []), g[start] + heuristic(start, problem))
     while not frontier.isEmpty():
-        cur = frontier.pop()
+        cur, actions = frontier.pop()
         if problem.isGoalState(cur):
-            return construct_path(trace, cur)
+            return actions
         explored.add(cur)
         for child in problem.getSuccessors(cur):
             if child[0] not in explored:
                 cost = g[cur] + child[2] + heuristic(child[0], problem)
                 if child[0] not in g or cost < g[child[0]]:
                     g[child[0]] = g[cur] + child[2]
-                    trace[child[0]] = (cur, child[1])
-                    frontier.update(child[0], cost)
+                    frontier.update((child[0], actions + [child[1]]), cost)
     return []
-
-def construct_path(trace, goal):
-    cur_node = goal
-    cur_action = trace[goal][1]
-    path = []
-    while trace[cur_node][0] is not None:
-        path.append(cur_action)
-        cur_node = trace[cur_node][0]
-        cur_action = trace[cur_node][1]
-    path.reverse()
-    return path
 
 # Abbreviations
 bfs = breadthFirstSearch
