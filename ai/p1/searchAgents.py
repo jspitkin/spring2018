@@ -291,7 +291,7 @@ class CornersProblem(search.SearchProblem):
         Returns the start state (in your state space, not the full Pacman state
         space)
         """
-        return (self.startingPosition, set())
+        return (self.startingPosition, [])
 
     def isGoalState(self, state):
         """
@@ -320,7 +320,8 @@ class CornersProblem(search.SearchProblem):
             hitsWall = self.walls[nextx][nexty]
             if not hitsWall:
                 if (nextx, nexty) in self.corners:
-                    corners.add((nextx, nexty))
+                    successors.append(((nextx, nexty), corners + [(nextx, nexty)], action, 1))
+                    print successors
                 successors.append((((nextx, nexty), corners), action, 1))
         self._expanded += 1 # DO NOT CHANGE
         return successors

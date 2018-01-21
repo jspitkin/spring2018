@@ -78,12 +78,12 @@ def depthFirstSearch(problem):
     start = problem.getStartState()
     # frontier -> (node label, actions)
     frontier.push((start, []))
-    explored = set()
+    explored = []
     while not frontier.isEmpty():
         cur, actions = frontier.pop()
         if problem.isGoalState(cur):
             return actions
-        explored.add(cur)
+        explored.append(cur)
         for child in problem.getSuccessors(cur):
             if child[0] not in explored:
                 frontier.push((child[0], actions + [child[1]]))
@@ -96,7 +96,7 @@ def breadthFirstSearch(problem):
     start = problem.getStartState()
     # frontier -> (node label, actions)
     frontier.push((start, []))
-    explored = set([start])
+    explored = [start]
     while not frontier.isEmpty():
         cur, actions = frontier.pop()
         if problem.isGoalState(cur):
@@ -105,7 +105,7 @@ def breadthFirstSearch(problem):
             if child[0] in explored:
                 continue
             frontier.push((child[0], actions + [child[1]]))
-            explored.add(child[0])
+            explored.append(child[0])
     return []
 
 
@@ -116,12 +116,12 @@ def uniformCostSearch(problem):
     # frontier -> (node label, actions)
     frontier.push((start, []), 0)
     path_cost = { start : 0 }
-    explored = set()
+    explored = []
     while not frontier.isEmpty():
         cur, actions = frontier.pop()
         if problem.isGoalState(cur):
             return actions
-        explored.add(cur)
+        explored.append(cur)
         for child in problem.getSuccessors(cur):
             if child[0] not in explored:
                 cost = path_cost[cur] + child[2]
@@ -143,14 +143,14 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     frontier = util.PriorityQueue()
     start = problem.getStartState()
     g = { start : 0 }
-    explored = set()
+    explored = []
     # frontier -> (node label, actions)
     frontier.push((start, []), g[start] + heuristic(start, problem))
     while not frontier.isEmpty():
         cur, actions = frontier.pop()
         if problem.isGoalState(cur):
             return actions
-        explored.add(cur)
+        explored.append(cur)
         for child in problem.getSuccessors(cur):
             if child[0] not in explored:
                 cost = g[cur] + child[2] + heuristic(child[0], problem)
