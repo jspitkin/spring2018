@@ -24,13 +24,12 @@ For the following problems, S will denote Start and G will denote Goal. When cho
 
 \begin{enumerate}
 \item Greedy search
-
 \begin{table}[H]
 \centering
 {\renewcommand{\arraystretch}{1.2}%
 \begin{tabular}{| c | c | c |}
 \hline
-\textbf{Step} & \textbf{Frontier} & \textbf{Expand}\\
+\textbf{Step} & \textbf{Priority Queue} & \textbf{Expand}\\
 \hline
 1 & (S, 0) & S\\ \hline
 2 & (S-A, 3), (S-B, 2) & B\\ \hline
@@ -45,34 +44,34 @@ For the following problems, S will denote Start and G will denote Goal. When cho
 
 \item Depth first search
  
-Note: as a LIFO queue is used, nodes are enqueued in reverse alphabetical order, so they are expanded in alphabetical order.
+Note: a LIFO queue is used and sibling nodes are enqueued in alphabetical order.
 
 \begin{table}[H]
 \centering
 {\renewcommand{\arraystretch}{1.2}%
 \begin{tabular}{| c | c | c |}
 \hline
-\textbf{Step} & \textbf{Frontier} & \textbf{Expand}\\
+\textbf{Step} & \textbf{LIFO Queue} & \textbf{Expand}\\
 \hline
 1 & S & S\\ \hline
-2 & A, B & A\\ \hline
-3 & G, B & G\\ \hline
+2 & B, A & B\\ \hline
+3 & G, D, C, A & G\\ \hline
 \end{tabular}}
 \caption{Depth first search}
 \end{table}
 
-\textbf{Depth first search final path: $S \rightarrow A \rightarrow G$}
+\textbf{Depth first search final path: $S \rightarrow B \rightarrow G$}
 
 \item Breadth first search
 
-Note: when adding nodes to the frontier, a check is first made to see if they are already contained in the frontier. If they are, they aren't re-added.
+Note: a FIFO queue is used and sibling nodes are enqueued in alphabetical order. If a node is already in the queue, it is not re-added.
 
 \begin{table}[H]
 \centering
 {\renewcommand{\arraystretch}{1.2}%
 \begin{tabular}{| c | c | c |}
 \hline
-\textbf{Step} & \textbf{Frontier} & \textbf{Expand}\\
+\textbf{Step} & \textbf{FIFO Queue} & \textbf{Expand}\\
 \hline
 1 & S & S\\ \hline
 2 & A, B & A\\ \hline
@@ -91,7 +90,7 @@ Note: when adding nodes to the frontier, a check is first made to see if they ar
 {\renewcommand{\arraystretch}{1.2}%
 \begin{tabular}{| c | c | c |}
 \hline
-\textbf{Step} & \textbf{Frontier} & \textbf{Expand}\\
+\textbf{Step} & \textbf{Priority Queue} & \textbf{Expand}\\
 \hline
 1 & (S, 0) & S\\ \hline
 2 & (S-A, 3), (S-B, 2) & B\\ \hline
@@ -112,7 +111,7 @@ Note: when adding nodes to the frontier, a check is first made to see if they ar
 {\renewcommand{\arraystretch}{1.2}%
 \begin{tabular}{| c | c | c |}
 \hline
-\textbf{Step} & \textbf{Frontier} & \textbf{Expand}\\
+\textbf{Step} & \textbf{Priority Queue} & \textbf{Expand}\\
 \hline
 1 & (S, 0) & S\\ \hline
 2 & (S-A, 2), (S-B, 3) & A\\ \hline
@@ -130,7 +129,7 @@ Note: when adding nodes to the frontier, a check is first made to see if they ar
 {\renewcommand{\arraystretch}{1.2}%
 \begin{tabular}{| c | c | c |}
 \hline
-\textbf{Step} & \textbf{Frontier} & \textbf{Expand}\\
+\textbf{Step} & \textbf{Priority Queue} & \textbf{Expand}\\
 \hline
 1 & (S, 0) & S\\ \hline
 2 & (S-A, 5), (S-B, 5) & A\\ \hline
@@ -149,45 +148,80 @@ Note: when adding nodes to the frontier, a check is first made to see if they ar
 \newpage
 \section{Downhill Skiing}
 
-After getting to Alta, Alice takes the lift up to the top of the
-mountain.  The run is really rocky, so her only option is to go
-straight downhill.  She begins with a velocity of $0$ and can safely
-maintain a maximum velocity of $V$.  At any state, she has three
-actions she can take: accelerate, decelerate or coast.  If the
-accelerates, her velocity increases by $1$; if she decelerates, it
-decreases by $1$; if she coasts, it stays the same.  \emph{After} her
-velocity is adjusted by her action, she moves downhill an equal number
-of squares to her current velocity.
-
-\includegraphics[width=0.5\textwidth]{hw1-skiing.pdf}
-
-Consider the above figure.  If Alice's first action is ``accelerate''
-then she will end up in the second square down with a velocity of
-$1$.  If she then ``coasts'' then she will end up in the third square
-down with a velocity of $1$.  If she ``accelerates'' again, she will
-end up in the fifth square down with a velocity of $2$.
-
-Alice's goal is to reach the chair lift (marked ``G'') with a velocity
-of zero.  (No, Alice cannot have negative velocities).  She would like
-to get there as quickly as possible.  However, if she has a non-zero
-velocity at the goal, she skies into the parking lot and destroys her
-skis.
-
-% Ditto about commenting out the problem definition above.
-
 \begin{enumerate}
 \item If the mountain is $N$ units tall (eg., it is $N=6$ units tall in
 the figure), what is the size of the state space?  Justify your
 answer.  (You may ignore ``unreachable'' states.)  What are the
 start/goal states?
 
+Let's consider the state space $S$ of the example where $N = 6$. A state $s_i \in S$ is defined by a position and a current velocity as such: $s_i = (position, velocity)$. First we will define the start state $s_0$ and goal state $g$.
+
+$$s_0 = (1, 0), \ g = (6, 0)$$
+
+For small $N$, we can simply enumerate all the possible velocities at each position on the hill to determine the reachable states. Her action adjusts her velocity \textit{before} she moves squares, which is how a velocity of 1 at square 1 is possible. Also, Alice makes a final action at the goal state.
+
+\begin{table}[H]
+\centering
+{\renewcommand{\arraystretch}{1.2}%
+\begin{tabular}{| c | c | c | c |}
+\hline
+(1, 0) & (1, 1) & - & - \\ \hline
+(2, 0) & (2, 1) & (2, 2) & - \\ \hline
+(3, 0) & (3, 1) & (3, 2) & - \\ \hline
+(4, 0) & (4, 1) & (4, 2) & (4, 3) \\ \hline
+(5, 0) & (5, 1) & (5, 2) & (5, 3) \\ \hline
+(6, 0) & (6, 1) & (6, 2) & (6, 3) \\ \hline
+\end{tabular}}
+\caption{State space for Alice's ski run.}
+\end{table}
+
+To justify this table, we will consider it one column at a time. 
+
+\textit{Column 1:} Alice can be present in each square with a velocity of 0 by alternating \texttt{accelerate} and \texttt{decelerate} actions all the way down the hill.
+
+\textit{Column 2:} Alice can \texttt{accelerate} at square 1 and \texttt{coast} the rest of the way down the hill.
+
+\textit{Column 3:} From square $n - 1$ with a velocity of 0 before performing an action, \texttt{accelerate} twice. The state will be arrived at after the second \texttt{accelerate} but before moving.
+
+\textit{Column 4:} From square $n - 2$ with a velocity of 1 before performing an action, \texttt{accelerate} twice. The state will be arrived at after the second \texttt{accelerate} but before moving.
+
+There is no way to have a velocity greater than $3$ when $N = 6$. The best chance at the largest velocity is to \texttt{accelerate} for every action (as the higher on the hill you are the more space you have to accelerate before hitting the parking lot). Consider we \texttt{accelerate} 3 times. This will take us to space $(4, 3)$ after performing the action but before moving. Once we move, we will be overshooting the goal into the parking lot.
+
+Thus, $\mathbf{|S| = 20}$.
+
 \item Give an example of a state that is not reachable.  Suppose that
 Alice cannot coast (she must either accelerate or decelerate): does this
 yield \emph{more} unreachable states? If so, give an example of one and
 justify your answer either way.
 
+An example of a state that is not reachable is $(1, 2)$ (being at square 1 with a velocity of 2). Her velocity at square 1 is either $0$ (she \texttt{coasts} as her first move) or $1$ (she \texttt{accelerates} as her first move). There is no way for her to move back up the hill either.
+
+When we remove the action of \texttt{coast}, the number of unreachable states does not change. In question one, I used \texttt{coast} to justify being at each square with a velocity of 1. Another way to achieve this without coasting is to alternate between \texttt{accelerate} and \texttt{decelerate}. This will place Alice in all squares with a velocity of 1.
+
 \item Is Alice's current elevation (i.e., distance from the chair lift)
 an admissible heuristic?  Why or why not?
+
+A heuristic $h(n)$ is admissible if $h(n) \leq h*(n)$ where $h*(n)$ is the true cost to the nearest goal.
+
+Alice's current elevation is an admissible heuristic, we can prove this by comparing the heuristic with the best true cost for each square on the hill.
+
+\begin{table}[H]
+\centering
+{\renewcommand{\arraystretch}{1.2}%
+\begin{tabular}{| c | c | c |}
+\hline
+\textbf{h(n)} & \textbf{h*(n)} & \textbf{Possible Best Path}\\
+\hline
+- & - & -\\ \hline
+- & - & -\\ \hline
+- & - & -\\ \hline
+- & - & -\\ \hline
+- & - & -\\ \hline
+- & - & -\\ \hline
+\end{tabular}}
+\caption{Comparison of h(n) and h*(n) for $N \in [0, 5]$}
+\end{table}
+
 
 \item State and justify a non-trivial, admissible heuristic for this
 problem which is \emph{not} current elevation.
