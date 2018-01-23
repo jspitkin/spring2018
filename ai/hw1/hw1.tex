@@ -6,6 +6,7 @@
 \usepackage{notes}
 \usepackage{url}
 \usepackage{graphicx}
+\newcommand{\floor}[1]{\lfloor #1 \rfloor}
 \title{HW1: Search}
 \duedate{}
 \class{CS6300: Artificial Intelligence, Spring 2018}
@@ -158,7 +159,7 @@ Let's consider the state space $S$ of the example where $N = 6$. A state $s_i \i
 
 $$s_0 = (1, 0), \ g = (6, 0)$$
 
-For small $N$, we can simply enumerate all the possible velocities at each position on the hill to determine the reachable states. Her action adjusts her velocity \textit{before} she moves squares, which is how a velocity of 1 at square 1 is possible. Also, Alice makes a final action at the goal state.
+For small $N$, we can simply enumerate all the possible velocities at each position on the hill to determine the reachable states. Her action adjusts her velocity \textit{before} she moves positions, which is how a velocity of 1 at square 1 is possible. Also Alice makes a final action at the goal state.
 
 \begin{table}[H]
 \centering
@@ -187,44 +188,71 @@ To justify this table, we will consider it one column at a time.
 
 There is no way to have a velocity greater than $3$ when $N = 6$. The best chance at the largest velocity is to \texttt{accelerate} for every action (as the higher on the hill you are the more space you have to accelerate before hitting the parking lot). Consider we \texttt{accelerate} 3 times. This will take us to space $(4, 3)$ after performing the action but before moving. Once we move, we will be overshooting the goal into the parking lot.
 
-Thus, $\mathbf{|S| = 20}$.
+Thus, $\mathbf{|S| = 20}$. As a note, only $14$ of these are reachable \textit{before} making an action. The states $(1, 1), (2, 2), (3, 2), (4, 3), (5, 3),$ and $(6,3)$ are only reachable after making an action but before moving.
 
 \item Give an example of a state that is not reachable.  Suppose that
 Alice cannot coast (she must either accelerate or decelerate): does this
 yield \emph{more} unreachable states? If so, give an example of one and
 justify your answer either way.
 
-An example of a state that is not reachable is $(1, 2)$ (being at square 1 with a velocity of 2). Her velocity at square 1 is either $0$ (she \texttt{coasts} as her first move) or $1$ (she \texttt{accelerates} as her first move). There is no way for her to move back up the hill either.
+An example of a state that is not reachable is $(1, 2)$ (being at square 1 with a velocity of 2). Her velocity at square 1 is either $0$ (she \texttt{coasts} as her first move) or $1$ (she \texttt{accelerates} as her first move).
 
-When we remove the action of \texttt{coast}, the number of unreachable states does not change. In question one, I used \texttt{coast} to justify being at each square with a velocity of 1. Another way to achieve this without coasting is to alternate between \texttt{accelerate} and \texttt{decelerate}. This will place Alice in all squares with a velocity of 1.
+When we remove the action of \texttt{coast}, the number of unreachable states does \textbf{not} change. In question one, I used \texttt{coast} to justify being at each square with a velocity of 1. Another way to achieve this without coasting is to alternate between \texttt{accelerate} and \texttt{decelerate}. This will place Alice in all positions on the hill with a velocity of 1.
 
 \item Is Alice's current elevation (i.e., distance from the chair lift)
 an admissible heuristic?  Why or why not?
 
-A heuristic $h(n)$ is admissible if $h(n) \leq h*(n)$ where $h*(n)$ is the true cost to the nearest goal.
+\textit{Admissible:} A heuristic $h(n)$ is admissible if $h(n) \leq h*(n)$ where $h^*(n)$ is the true cost to the nearest goal.
 
-Alice's current elevation is an admissible heuristic, we can prove this by comparing the heuristic with the best true cost for each square on the hill.
+\textit{Claim:} Alice's current elevation is \textbf{not} an admissible heuristic for all hills of size N.
+
+\textit{Proof by counter-example:} Consider a hill of size $N = 10$ with Alice at the start state. She is 9 positions away from the goal and as such $h(s_0) = 9$.
+
+Consider the following actions for Alice to get down the hill. 
 
 \begin{table}[H]
 \centering
 {\renewcommand{\arraystretch}{1.2}%
 \begin{tabular}{| c | c | c |}
 \hline
-\textbf{h(n)} & \textbf{h*(n)} & \textbf{Possible Best Path}\\
+\textbf{State} & \textbf{Action} & \textbf{New Velocity} \\
 \hline
-- & - & -\\ \hline
-- & - & -\\ \hline
-- & - & -\\ \hline
-- & - & -\\ \hline
-- & - & -\\ \hline
-- & - & -\\ \hline
+(1, 0) & \texttt{accelerate} & 1 \\ \hline
+(2, 1) & \texttt{accelerate} & 2 \\ \hline
+(4, 2) & \texttt{accelerate} & 3 \\ \hline
+(7, 3) & \texttt{decelerate} & 2 \\ \hline
+(9, 2) & \texttt{decelerate} & 1 \\ \hline
+(10, 1) & \texttt{decelerate} & 0 \\ \hline
 \end{tabular}}
-\caption{Comparison of h(n) and h*(n) for $N \in [0, 5]$}
+\caption{A possible ski run on a hill of size 10 in 6 actions.}
 \end{table}
 
+Proving this heuristic is not admissible as $h(s_0) \leq h^*(s_0)$ or $9 \leq 6$ does not hold.
 
 \item State and justify a non-trivial, admissible heuristic for this
 problem which is \emph{not} current elevation.
+
+Consider a \textit{relaxed} version of Alice's ski run. Alice is a pro so regardless of her velocity when she reaches the goal, she can stop and she has no maximum velocity. In the relaxed version, Alice will always be able to get down a non-trivial hill faster than the original problem as she can \texttt{accelerate} for every action.
+
+To define the heuristic $h(s_i)$, we must determine how many times does Alice need to \texttt{accelerate} to travel from her current state to the chair lift?
+
+To start, if Alice only accelerates from the top of the hill, her position will change as such:
+
+$$1, 2, 4, 7, 11, 16, 22, ...$$
+
+Using WolframAlpha, we can find a closed form for the number of accelerations required to reach the bottom of the hill given a current elevation:
+
+$$e = \frac{1}{2} * (a^2 - a + 2)$$
+
+Where e is the current elevation and a is the required accelerations. Finally, we must consider Alice's current velocity:
+
+$$e = \frac{1}{2} * ((a + v)^2 - (a + v) + 2)$$
+
+Thus the value of $h(s_i) = \floor{a}$, where $a$ is the positive value that satisfies the above equation (it is quadratic so there will be two a positive and negative solution).
+
+This will be an admissible heuristic as it is derived from the relaxed version of the original problem where Alice doesn't have to take into account decelerating as she approaches the bottom of the hill.
+
+
 \end{enumerate}
 
 \end{document}
