@@ -319,9 +319,8 @@ class CornersProblem(search.SearchProblem):
             nextx, nexty = int(x + dx), int(y + dy)
             hitsWall = self.walls[nextx][nexty]
             if not hitsWall:
-                if (nextx, nexty) in self.corners:
-                    successors.append(((nextx, nexty), corners + [(nextx, nexty)], action, 1))
-                    print successors
+                if (nextx, nexty) in self.corners and (nextx, nexty) not in corners:
+                    corners = corners + [(nextx, nexty)]
                 successors.append((((nextx, nexty), corners), action, 1))
         self._expanded += 1 # DO NOT CHANGE
         return successors
