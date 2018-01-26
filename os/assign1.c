@@ -52,9 +52,30 @@
  * EXAMPLE: byte_sort (0x0403deadbeef0201) returns 0xefdebead04030201
  *
  *********************************************************************/
+void printbincharpad(char c)
+{
+    for (int i = 7; i >= 0; --i)
+    {
+        putchar( (c & (1 << i)) ? '1' : '0' );
+    }
+    putchar('\n');
+}
 
 unsigned long byte_sort (unsigned long arg)
 {
+  char bytes[8];
+  printf("%lu\n", arg);
+  printf("%lx\n", arg);
+  // Split long into 8 bytes
+  for (int i = 0; i < 8; i++) {
+    bytes[i] = (arg >> (8 * i)) & 0xFF;
+    printf("%c\n", bytes[i]);
+    printbincharpad(bytes[i]);
+  }
+  // Selection sort on the 8 bytes
+  for (int i = 0; i < 8; i++) {
+    printf("%c\n", bytes[i]);
+  }
   return 0;
 }
 
