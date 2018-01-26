@@ -145,18 +145,19 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     g = { start : 0 }
     explored = []
     # frontier -> (node label, actions)
-    frontier.push((start, []), g[start] + heuristic(start, problem))
+    frontier.push((start, []), 0)
     while not frontier.isEmpty():
         cur, actions = frontier.pop()
         if problem.isGoalState(cur):
             return actions
         explored.append(cur)
         for child in problem.getSuccessors(cur):
-            if child[0] not in explored:
-                cost = g[cur] + child[2] + heuristic(child[0], problem)
-                if child[0] not in g or cost < g[child[0]]:
-                    g[child[0]] = g[cur] + child[2]
-                    frontier.update((child[0], actions + [child[1]]), cost)
+            childState, childAction, childCost = child
+            if childState not in explored:
+                cost = g[cur] + childCost + heuristic(childState, problem)
+                if childState not in g or cost < g[childState]:
+                    g[childState] = g[cur] + childCost
+                    frontier.update((childState, actions + [childAction]), cost)
     return []
 
 # Abbreviations
