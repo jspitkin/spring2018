@@ -102,7 +102,34 @@ unsigned long byte_sort (unsigned long arg)
 
 unsigned long nibble_sort (unsigned long arg)
 {
-  return 0;
+  unsigned char bits[16];
+  // Split long into 16 4-bit numbers
+  for (int i = 0; i < 16; i++) {
+    bits[i] = (arg >> (4 * i)) & 0xF;
+  }
+  // Selection sort on the 16 4-bit numbers
+  for (int i = 0; i < 15; i++) {
+    int min_idx = i;
+    for (int j = i+1; j < 16; j++) {
+      if (bits[j] < bits[min_idx]) {
+        min_idx = j;
+      }
+    }
+    if (min_idx != i) {
+      unsigned char tmp = bits[i];
+      bits[i] = bits[min_idx];
+      bits[min_idx] = tmp;
+    }
+  }
+  // Arrange sorted bytes into unsigned long
+  unsigned long result = 0;
+  for (int i = 0; i < 16; i++) {
+    unsigned long shift_bits = 0;
+    shift_bits = shift_bits | bits[i];
+    shift_bits = shift_bits << (4 * i);
+    result = result | shift_bits;
+  }
+  return result;
 }
 
 /*********************************************************************
