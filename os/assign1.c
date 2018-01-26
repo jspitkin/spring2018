@@ -52,31 +52,36 @@
  * EXAMPLE: byte_sort (0x0403deadbeef0201) returns 0xefdebead04030201
  *
  *********************************************************************/
-void printbincharpad(char c)
-{
-    for (int i = 7; i >= 0; --i)
-    {
-        putchar( (c & (1 << i)) ? '1' : '0' );
-    }
-    putchar('\n');
-}
-
 unsigned long byte_sort (unsigned long arg)
 {
-  char bytes[8];
-  printf("%lu\n", arg);
-  printf("%lx\n", arg);
+  unsigned char bytes[8];
   // Split long into 8 bytes
   for (int i = 0; i < 8; i++) {
     bytes[i] = (arg >> (8 * i)) & 0xFF;
-    printf("%c\n", bytes[i]);
-    printbincharpad(bytes[i]);
   }
   // Selection sort on the 8 bytes
-  for (int i = 0; i < 8; i++) {
-    printf("%c\n", bytes[i]);
+  for (int i = 0; i < 7; i++) {
+    int min_idx = i;
+    for (int j = i+1; j < 8; j++) {
+      if (bytes[j] < bytes[min_idx]) {
+        min_idx = j;
+      }
+    }
+    if (min_idx != i) {
+      unsigned char tmp = bytes[i];
+      bytes[i] = bytes[min_idx];
+      bytes[min_idx] = tmp;
+    }
   }
-  return 0;
+  // Arrange sorted bytes into unsigned long
+  unsigned long result = 0;
+  for (int i = 0; i < 8; i++) {
+    unsigned long shift_bits = 0;
+    shift_bits = shift_bits | bytes[i];
+    shift_bits = shift_bits << (8 * i);
+    result = result | shift_bits;
+  }
+  return result;
 }
 
 /*********************************************************************
