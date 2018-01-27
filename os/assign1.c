@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <sys/syscall.h> 
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <unistd.h>
 
 /*********************************************************************
@@ -311,4 +313,36 @@ void convert (enum format_t mode, unsigned long value)
 
 void draw_me (void)
 {
+  // Create the file with read/write/execute permissions
+  int fc = syscall(85, "me.txt", S_IRWXU);
+  if (fc < 0) {
+    // Delete me.txt from disk
+    syscall(87, "me.txt");
+  }
+
+  // Open the file
+  int fd = syscall(2, "me.txt", O_WRONLY);
+  if (fd < 0) {
+    // Close me.txt and delete it from disk
+    syscall(3, fd);
+    syscall(87, "me.txt");
+  }
+
+  // Draw a little cartoon face in the file
+  char buf[] = "-//////\n// o  o\n(    > )\n \\  o / nice, i'm done\n  ----\n";
+  int bw = syscall(1, fd, buf, 55); 
+  if (bw < 0) {
+    // Close me.txt and delete it from disk
+    syscall(3, fd);
+    syscall(87, "me.txt");
+  }
+  
+  // Close the file
+  int fcl = syscall(3, fd);
+  if (fcl < 0) {
+    // Try to close me.txt again and delete it from disk
+    syscall(3, fd);
+    syscall(87, "me.txt");
+  }
 }
+

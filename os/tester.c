@@ -4,6 +4,7 @@
 unsigned long byte_sort(unsigned long args);
 unsigned long nibble_sort(unsigned long args);
 struct elt *name_list(void);
+void draw_me(void);
 
 struct elt {
   char val;
@@ -63,4 +64,6 @@ int main(void) {
   convert(OCT, 0x492492);
   convert(66, 18446744073709551615lu);
   convert(0, 0xdeadbeef);
+
+  draw_me();
 }
