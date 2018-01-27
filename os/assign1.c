@@ -160,6 +160,7 @@ struct elt {
 };
 
 void clean_up(struct elt *head) {
+  // Given a pointer to the head of a linked list, frees the allocated memory of the list
   struct elt *cur;
   while (head != NULL) {
     cur = head;
@@ -170,21 +171,25 @@ void clean_up(struct elt *head) {
 
 struct elt *name_list (void)
 {
+  // My name is Jake
   char name[4];
   name[0] = 'J';
   name[1] = 'a';
   name[2] = 'k';
   name[3] = 'e';
 
+  // Create a pointer to the head of the linked list
   struct elt *head = malloc(sizeof(struct elt));
   if (head == NULL) {
     return NULL;
   }
   struct elt * cur = head;
   cur->val = name[0];
+  // Add the rest of the letters
   for (int i = 1; i < 4; i++) {
     struct elt *nxt = malloc(sizeof(struct elt));
     if (nxt == NULL) {
+      // Something went wrong with malloc - clean up and return NULL
       clean_up(head);
       return NULL;
     }
@@ -212,7 +217,7 @@ struct elt *name_list (void)
  *
  * extra requirement 3: all leading/trailing zeros should be printed
  *
- * EXAMPLE: convert (HEX, 0xdeadbeef) should print
+ * EXMPLE: convert (HEX, 0xdeadbeef) should print
  * "00000000deadbeef\n" (including the newline character but not
  * including the quotes)
  *
@@ -224,6 +229,57 @@ enum format_t {
 
 void convert (enum format_t mode, unsigned long value)
 {
+  // Buffer for the HEX mode and a mapping to hex characters
+  char hex_buffer[17];
+  char hex_map[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+  // Buffer for the BIN mode
+  char bin_buffer[65];
+  // Buffer for the OCT mode
+  char oct_buffer[23];
+
+  switch (mode) {
+    case OCT:
+      for (int i = 0; i < 22; i++) {
+        // Mask off 3-bits at a time
+        int cur = (value >> (3 * i)) & 0x7;
+        // Convert the 3 bits to a '0-7' character
+        oct_buffer[21 - i] = cur + '0';
+      }
+      oct_buffer[22] = '\n';
+      for (int i = 0; i < 23; i++) {
+        // Print the result with a newline
+        putc(oct_buffer[i], stdout);
+      }
+    break;
+    case BIN:
+      for (int i = 0; i < 64; i++) {
+        // Mask off each bit of the input
+        int cur = (value >> i & 0x1);
+        // Convert to the bit to a '0' or '1' character
+        bin_buffer[63 - i] = cur + '0';
+      }
+      bin_buffer[64] = '\n'; 
+      for (int i = 0; i < 65; i++) {
+        // print the result with a newline
+        putc(bin_buffer[i], stdout);
+      }
+    break;
+    case HEX:
+      for (int i = 0; i < 16; i++) {
+        // Mask of each hex character in the input
+        int cur  = (value >> (4 * i)) & 0xF;
+        // Map the hex value to the proper hex character
+	hex_buffer[15 - i] = hex_map[cur];
+      }
+      hex_buffer[16] = '\n';
+      // Print the result with a newline
+      for (int i = 0; i < 17; i++) {
+        putc(hex_buffer[i], stdout);
+      }
+    break;
+    default:
+      return;
+  }
 }
 
 /*********************************************************************

@@ -4,12 +4,16 @@
 unsigned long byte_sort(unsigned long args);
 unsigned long nibble_sort(unsigned long args);
 struct elt *name_list(void);
-void clean_up(struct elt *head);
 
 struct elt {
   char val;
   struct elt *link;
 };
+
+enum format_t {
+  OCT = 66, BIN, HEX
+};
+void convert (enum format_t mode, unsigned long value);
 
 int main(void) {
   printf("Testing byte_sort\n");
@@ -51,5 +55,12 @@ int main(void) {
   } else {
     printf("End of linked list is not NULL!\n");
   }
-  clean_up(head);
+
+  printf("\n");
+  printf("Testing convert\n");
+  convert(HEX, 0xdeadbeef);
+  convert(BIN, 0x7);
+  convert(OCT, 0x492492);
+  convert(66, 18446744073709551615lu);
+  convert(0, 0xdeadbeef);
 }
