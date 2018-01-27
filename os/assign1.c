@@ -161,7 +161,7 @@ struct elt {
   struct elt *link;
 };
 
-void clean_up(struct elt *head) {
+static void clean_up(struct elt *head) {
   // Given a pointer to the head of a linked list, frees the allocated memory of the list
   struct elt *cur;
   while (head != NULL) {
