@@ -159,9 +159,42 @@ struct elt {
   struct elt *link;
 };
 
+void clean_up(struct elt *head) {
+  struct elt *cur;
+  while (head != NULL) {
+    cur = head;
+    head = head->link;
+    free(cur);
+  }
+}
+
 struct elt *name_list (void)
 {
-  return NULL;
+  char name[4];
+  name[0] = 'J';
+  name[1] = 'a';
+  name[2] = 'k';
+  name[3] = 'e';
+
+  struct elt *head = malloc(sizeof(struct elt));
+  if (head == NULL) {
+    return NULL;
+  }
+  struct elt * cur = head;
+  cur->val = name[0];
+  for (int i = 1; i < 4; i++) {
+    struct elt *nxt = malloc(sizeof(struct elt));
+    if (nxt == NULL) {
+      clean_up(head);
+      return NULL;
+    }
+    cur->link = nxt; 
+    nxt->val = name[i];
+    cur = nxt;
+  }
+  cur->link = NULL;
+  
+  return head;
 }
 
 /*********************************************************************

@@ -3,6 +3,13 @@
 
 unsigned long byte_sort(unsigned long args);
 unsigned long nibble_sort(unsigned long args);
+struct elt *name_list(void);
+void clean_up(struct elt *head);
+
+struct elt {
+  char val;
+  struct elt *link;
+};
 
 int main(void) {
   printf("Testing byte_sort\n");
@@ -27,4 +34,22 @@ int main(void) {
   }
   printf("Expected: %lx\n", expected_sorted_nibble);
   printf("Actual: %lx\n", sorted_nibble);
+
+  printf("\n");
+  printf("Testing name_list");
+  struct elt *head = name_list();
+  struct elt *cur = head;
+  printf("\n");
+  while (cur != NULL) {
+    char letter = cur->val;
+    printf("%c", letter);
+    cur = cur->link;
+  }
+  printf("\n"); 
+  if (cur == NULL) {
+    printf("End of linked list is NULL as expected.\n");
+  } else {
+    printf("End of linked list is not NULL!\n");
+  }
+  clean_up(head);
 }
