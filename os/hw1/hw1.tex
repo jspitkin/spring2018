@@ -1,0 +1,58 @@
+\documentclass[fleqn]{hw}
+
+%\usepackage{haldefs}
+\usepackage{amsmath}
+\usepackage{float}
+\usepackage{notes}
+\usepackage{url}
+\usepackage{graphicx}
+\newcommand{\floor}[1]{\lfloor #1 \rfloor}
+\title{Homework 1}
+\duedate{}
+\class{CS5460: Operating Systems, Spring 2018}
+\institute{University of Utah}
+\author{Jake Pitkin}
+% IF YOU'RE USING THIS .TEX FILE AS A TEMPLATE, PLEASE REPLACE
+% The author WITH YOUR NAME AND UID.
+% Replace the due date with anyone you worked with i.e. "Worked with: John McCarthy, Watson, & Hal-9000"
+
+\begin{document}
+
+\maketitle
+
+\begin{enumerate}
+
+\item [2.13] \textbf{Describe at least two general methods for passing parameters to the operating system.}
+\item [2.14] \textbf{Describe how you could obtain a statistical profile of the amount of time spent by a program executing different sections of its code. Discuss the importance of obtaining such a profile.}
+\item [3.9] \textbf{Describe the actions taken by a kernel to context-switch between processes.}
+\item [3.12] \textbf{Including the initial parent process, how many processes are created by the provided program?}
+
+The program will create a total of \textbf{eight} processes. Consider the following table which shows the processes created at each \texttt{fork} and call its parent (process creation order is non-deterministic and the \texttt{pids} do not reflect a creation order).
+
+\begin{table}[H]
+\centering
+{\renewcommand{\arraystretch}{1.2}%
+\begin{tabular}{| c | c | c |}
+\hline
+\texttt{pid} & \texttt{ppid} & \texttt{fork} \\
+\hline
+p1 & - & - \\ \hline
+p2 & p1 & fork 1 \\ \hline
+p3 & p1 & fork 2 \\ \hline
+p4 & p1 & fork 3 \\ \hline
+p5 & p2 & fork 2 \\ \hline
+p6 & p2 & fork 3 \\ \hline
+p7 & p3 & fork 3 \\ \hline
+p8 & p5 & fork 3 \\ \hline
+\end{tabular}}
+\end{table}
+
+\item [3.17] \textbf{Using the provided program, explain what the output will be at lines X and Y.}
+
+There are two processes in this program, a parent and a child. The child will be first to print to \texttt{stdout} and complete as the parent calls \texttt{wait()} above their for-loop that outputs. The \texttt{wait()} system call causes a process to wait on the given line until its children processes are done executing. The other point of interest is both the parent and child have their own copy of the \texttt{nums} array. As such, when the child process is modifying their copy of \texttt{nums}, this won't be reflected in the parent's copy. As such, the child will output the negative squares of each value in \texttt{nums} followed by the parent process just outputting each value in \texttt{nums}.
+
+\textbf{Output:} CHILD: 0 CHILD: -1 CHILD: -4 CHILD: -9 CHILD: -16 PARENT: 0 PARENT: 1 PARENT: 2 PARENT: 3 PARENT: 4
+
+\end{enumerate}
+
+\end{document}
