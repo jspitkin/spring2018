@@ -1,258 +1,92 @@
-\documentclass[fleqn]{hermans-hw}
-
-%\usepackage{haldefs}
-\usepackage{amsmath}
-\usepackage{float}
-\usepackage{notes}
-\usepackage{url}
+\documentclass[11pt, letterpaper]{hw}
 \usepackage{graphicx}
-\newcommand{\floor}[1]{\lfloor #1 \rfloor}
-\title{HW1: Search}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{amssymb} % For set naming (i.e. R^n)
+\usepackage{subfig}
+\usepackage{url}
+
+\title{HW2: Classical Planning and Constraint Satisfaction}
 \duedate{}
 \class{CS6300: Artificial Intelligence, Spring 2018}
 \institute{University of Utah}
-\author{Jake Pitkin}
+\author{Tucker Hermans}
 % IF YOU'RE USING THIS .TEX FILE AS A TEMPLATE, PLEASE REPLACE
 % The author WITH YOUR NAME AND UID.
 % Replace the due date with anyone you worked with i.e. "Worked with: John McCarthy, Watson, & Hal-9000"
 
 \begin{document}
-
 \maketitle
-\section{Graph Search}
-
-For the following problems, S will denote Start and G will denote Goal. When choosing an arbitrary order of state expansions, alphabetical ordering will be used. Once visited, a state will not be expanded again.
-
+\section{Classical Planning}
 \begin{enumerate}
-\item Greedy search
-\begin{table}[H]
-\centering
-{\renewcommand{\arraystretch}{1.2}%
-\begin{tabular}{| c | c | c |}
-\hline
-\textbf{Step} & \textbf{Priority Queue} & \textbf{Expand}\\
-\hline
-1 & (S, 0) & S\\ \hline
-2 & (S-A, 3), (S-B, 2) & B\\ \hline
-3 & (S-A, 3), (S-B-D, 1), (S-B-C, 2), (S-B-G, 4) & D\\ \hline
-4 & (S-A, 3), (S-B-C, 2), (S-B-G, 4), (S-B-D-G, 5) & C\\ \hline
-5 & (S-A, 3), (S-B-G, 4), (S-B-D-G, 5), (S-B-C-G, 1) & G\\ \hline
-\end{tabular}}
-\caption{Greedy search}
-\end{table}
+\item \textbf{Define the preconditions and postconditions (add and delete lists) for the two actions. Assume the agent can only pick up a single object with nothing on it, that it can only hold a single object at a time, and that it can only place the object on a horizontally-flat, open surface.}
 
-\textbf{Greedy search final path: $S \rightarrow B \rightarrow C \rightarrow G$}
+We will introduce two new fluents. The first \textit{flat(x)} is true if \textit{x} is a horizontally-flat box. The second \textit{in$\_$hand(x)} is true if \textit{x} is in the agent's hand. 
 
-\item Depth first search
- 
-Note: a LIFO queue is used and sibling nodes are enqueued in alphabetical order.
+We will use \textit{clear(hand)} to indicate the agent's hand is empty. Otherwise \textit{clear(x)} indicates there is nothing on top of \textit{x} but it is not necessarily flat. Finally, \textit{on(x, y)} will be used to indicate object \textit{x} is on object \textit{y}.
+
+Using these, we can define the preconditions, add list, and delete list for \textit{pick$\_$up(x, y)} and \textit{place(x, y)}. Note I expanded the definition of \textit{pick$\_$up(x)} to \textit{pick$\_$up(x, y)} to specify the object under \textit{x}.
 
 \begin{table}[H]
 \centering
 {\renewcommand{\arraystretch}{1.2}%
 \begin{tabular}{| c | c | c |}
 \hline
-\textbf{Step} & \textbf{LIFO Queue} & \textbf{Expand}\\
+\textbf{PC} & \textbf{D} & \textbf{A}\\
 \hline
-1 & S & S\\ \hline
-2 & B, A & B\\ \hline
-3 & G, D, C, A & G\\ \hline
+\textit{clear(x)} & \textit{on(x, y)} & \textit{clear(y)}\\ \hline
+\textit{clear(hand)} & \textit{clear(hand)} & \textit{in$\_$hand(x)}\\ \hline
+\textit{on(x, y)} & \textit{clear(x)} &  \\ \hline
 \end{tabular}}
-\caption{Depth first search}
+\caption{Preconditions, add list, and delete list for \textit{pick$\_$up(x, y)}.}
 \end{table}
-
-\textbf{Depth first search final path: $S \rightarrow B \rightarrow G$}
-
-\item Breadth first search
-
-Note: a FIFO queue is used and sibling nodes are enqueued in alphabetical order. If a node is already in the queue, it is not re-added.
 
 \begin{table}[H]
 \centering
 {\renewcommand{\arraystretch}{1.2}%
 \begin{tabular}{| c | c | c |}
 \hline
-\textbf{Step} & \textbf{FIFO Queue} & \textbf{Expand}\\
+\textbf{PC} & \textbf{D} & \textbf{A}\\
 \hline
-1 & S & S\\ \hline
-2 & A, B & A\\ \hline
-3 & B, G & B\\ \hline
-4 & G, C, D & G\\ \hline
+\textit{in$\_$hand(x)} & \textit{in$\_$hand(x)} & \textit{clear(hand)}\\ \hline
+\textit{clear(y)} & \textit{clear(y)} & \textit{clear(x)}\\ \hline
+\textit{flat(y)} &  & \textit{clear(table)} \\ \hline
 \end{tabular}}
-\caption{Breadth first search}
+\caption{Preconditions, add list, and delete list for \textit{place(x, y)}.}
 \end{table}
 
-\textbf{Breadth first search final path: $S \rightarrow A \rightarrow G$}
+\item \textbf{How would you express a goal that there are two towers, each of height 3 blocks, with pyramids on top of each tower?}
 
-\item Uniform cost search
+The goal is defined as a conjunction of fluents (broken into two lines for readability):
 
-\begin{table}[H]
-\centering
-{\renewcommand{\arraystretch}{1.2}%
-\begin{tabular}{| c | c | c |}
-\hline
-\textbf{Step} & \textbf{Priority Queue} & \textbf{Expand}\\
-\hline
-1 & (S, 0) & S\\ \hline
-2 & (S-A, 3), (S-B, 2) & B\\ \hline
-3 & (S-A, 3), (S-B-C, 4), (S-B-D, 3), (S-B-G, 6) & A\\ \hline
-4 & (S-B-C, 4), (S-B-D, 3), (S-B-G, 6), (S-A-G, 6) & D\\ \hline
-5 & (S-B-C, 4), (S-B-G, 6), (S-A-G, 6), (S-B-D-G, 8) & C\\ \hline
-6 & (S-B-G, 6), (S-A-G, 6), (S-B-D-G, 8), (S-B-C-G, 5) & G\\ \hline
-\end{tabular}}
-\caption{Uniform cost search}
-\end{table}
+$$on(A, Table) \ \wedge \ on(B, A) \ \wedge \ on(C, B) \ \wedge \ \neg flat(C)$$
+$$\wedge \ on(D, Table) \ \wedge \ on(E, D) \ \wedge \ on(F, E) \ \wedge \ \neg flat(F)$$
 
-\textbf{Uniform cost search final path: $S \rightarrow B \rightarrow C \rightarrow G$}
+Where A-F are blocks. We don't have to be concerned with the peaks of the towers, C and F, having blocks on them (and increasing the height pass the goal height) as it's an invalid move to \textit{place} or \textit{move} a block onto a block that isn't horizontally flat.
 
-\item Greedy search with the heuristic values listed at each state
-
-\begin{table}[H]
-\centering
-{\renewcommand{\arraystretch}{1.2}%
-\begin{tabular}{| c | c | c |}
-\hline
-\textbf{Step} & \textbf{Priority Queue} & \textbf{Expand}\\
-\hline
-1 & (S, 0) & S\\ \hline
-2 & (S-A, 2), (S-B, 3) & A\\ \hline
-3 & (S-B, 3), (S-A-G, 0) & G\\ \hline
-\end{tabular}}
-\caption{Greedy search with heuristic values}
-\end{table}
-
-\textbf{Greedy search with heuristic final path: $S \rightarrow A \rightarrow G$}
-
-\item A* search with the heuristic values listed at each state
-
-\begin{table}[H]
-\centering
-{\renewcommand{\arraystretch}{1.2}%
-\begin{tabular}{| c | c | c |}
-\hline
-\textbf{Step} & \textbf{Priority Queue} & \textbf{Expand}\\
-\hline
-1 & (S, 0) & S\\ \hline
-2 & (S-A, 5), (S-B, 5) & A\\ \hline
-3 & (S-B, 5), (S-A-G, 6) & B\\ \hline
-4 & (S-A-G, 6), (S-B-C, 5), (S-B-D, 4), (S-B-G, 6) & D\\ \hline
-5 & (S-A-G, 6), (S-B-C, 5), (S-B-G, 6), (S-B-D-G, 8) & C\\ \hline
-6 & (S-A-G, 6), (S-B-G, 6), (S-B-D-G, 8), (S-B-C-G, 5) & G\\ \hline
-\end{tabular}}
-\caption{A* search}
-\end{table}
-
-\textbf{A* search final path: $S \rightarrow B \rightarrow C \rightarrow G$}
-
+\item \textbf{Suppose we introduce a new type of \emph{plank} object into the environment, which is long and skinny and must be supported by either the table or two blocks. What necessary changes would you have to make to your planning description to accommodate these changes?}
 \end{enumerate}
 
-\newpage
-\section{Downhill Skiing}
-
+\section{Crossword Puzzles}
 \begin{enumerate}
-\item If the mountain is $N$ units tall (eg., it is $N=6$ units tall in
-the figure), what is the size of the state space?  Justify your
-answer.  (You may ignore ``unreachable'' states.)  What are the
-start/goal states?
-
-Let's consider the state space $S$ of the example where $N = 6$. A state $s_i \in S$ is defined by a position and a current velocity as such: $s_i = (position, velocity)$. First we will define the start state $s_0$ and goal state $g$.
-
-$$s_0 = (1, 0), \ g = (6, 0)$$
-
-For small $N$, we can simply enumerate all the possible velocities at each position on the hill to determine the reachable states. Her action adjusts her velocity \textit{before} she moves positions, which is how a velocity of 1 at square 1 is possible. Also Alice makes a final action at the goal state.
-
-\begin{table}[H]
-\centering
-{\renewcommand{\arraystretch}{1.2}%
-\begin{tabular}{| c | c | c | c |}
-\hline
-(1, 0) & (1, 1) & - & - \\ \hline
-(2, 0) & (2, 1) & (2, 2) & - \\ \hline
-(3, 0) & (3, 1) & (3, 2) & - \\ \hline
-(4, 0) & (4, 1) & (4, 2) & (4, 3) \\ \hline
-(5, 0) & (5, 1) & (5, 2) & (5, 3) \\ \hline
-(6, 0) & (6, 1) & (6, 2) & (6, 3) \\ \hline
-\end{tabular}}
-\caption{State space for Alice's ski run.}
-\end{table}
-
-To justify this table, we will consider it one column at a time. 
-
-\textit{Column 1:} Alice can be present in each square with a velocity of 0 by alternating \texttt{accelerate} and \texttt{decelerate} actions all the way down the hill.
-
-\textit{Column 2:} Alice can \texttt{accelerate} at square 1 and \texttt{coast} the rest of the way down the hill.
-
-\textit{Column 3:} From square $n - 1$ with a velocity of 0 before performing an action, \texttt{accelerate} twice. The state will be arrived at after the second \texttt{accelerate} but before moving.
-
-\textit{Column 4:} From square $n - 2$ with a velocity of 1 before performing an action, \texttt{accelerate} twice. The state will be arrived at after the second \texttt{accelerate} but before moving.
-
-There is no way to have a velocity greater than $3$ when $N = 6$. The best chance at the largest velocity is to \texttt{accelerate} for every action (as the higher on the hill you are the more space you have to accelerate before hitting the parking lot). Consider we \texttt{accelerate} 3 times. This will take us to space $(4, 3)$ after performing the action but before moving. Once we move, we will be overshooting the goal into the parking lot.
-
-Thus, $\mathbf{|S| = 20}$. As a note, only $14$ of these are reachable \textit{before} making an action. The states $(1, 1), (2, 2), (3, 2), (4, 3), (5, 3),$ and $(6,3)$ are only reachable after making an action but before moving.
-
-\item Give an example of a state that is not reachable.  Suppose that
-Alice cannot coast (she must either accelerate or decelerate): does this
-yield \emph{more} unreachable states? If so, give an example of one and
-justify your answer either way.
-
-An example of a state that is not reachable is $(1, 2)$ (being at square 1 with a velocity of 2). Her velocity at square 1 is either $0$ (she \texttt{coasts} as her first move) or $1$ (she \texttt{accelerates} as her first move).
-
-When we remove the action of \texttt{coast}, the number of unreachable states does \textbf{not} change. In question one, I used \texttt{coast} to justify being at each square with a velocity of 1. Another way to achieve this without coasting is to alternate between \texttt{accelerate} and \texttt{decelerate}. This will place Alice in all positions on the hill with a velocity of 1.
-
-\item Is Alice's current elevation (i.e., distance from the chair lift)
-an admissible heuristic?  Why or why not?
-
-\textit{Admissible:} A heuristic $h(n)$ is admissible if $h(n) \leq h*(n)$ where $h^*(n)$ is the true cost to the nearest goal.
-
-\textit{Claim:} Alice's current elevation is \textbf{not} an admissible heuristic for all hills of size N.
-
-\textit{Proof by counter-example:} Consider a hill of size $N = 10$ with Alice at the start state. She is 9 positions away from the goal and as such $h(s_0) = 9$.
-
-Consider the following actions for Alice to get down the hill. 
-
-\begin{table}[H]
-\centering
-{\renewcommand{\arraystretch}{1.2}%
-\begin{tabular}{| c | c | c |}
-\hline
-\textbf{State} & \textbf{Action} & \textbf{New Velocity} \\
-\hline
-(1, 0) & \texttt{accelerate} & 1 \\ \hline
-(2, 1) & \texttt{accelerate} & 2 \\ \hline
-(4, 2) & \texttt{accelerate} & 3 \\ \hline
-(7, 3) & \texttt{decelerate} & 2 \\ \hline
-(9, 2) & \texttt{decelerate} & 1 \\ \hline
-(10, 1) & \texttt{decelerate} & 0 \\ \hline
-\end{tabular}}
-\caption{A possible ski run on a hill of size 10 in 6 actions.}
-\end{table}
-
-Proving this heuristic is not admissible as $h(s_0) \leq h^*(s_0)$ or $9 \leq 6$ does not hold.
-
-\item State and justify a non-trivial, admissible heuristic for this
-problem which is \emph{not} current elevation.
-
-Consider a \textit{relaxed} version of Alice's ski run. Alice is a pro so regardless of her velocity when she reaches the goal, she can stop and she has no maximum velocity. In the relaxed version, Alice will always be able to get down a non-trivial hill faster than the original problem as she can \texttt{accelerate} for every action.
-
-To define the heuristic $h(s_i)$, we must determine how many times does Alice need to \texttt{accelerate} to travel from her current state to the chair lift?
-
-To start, if Alice only accelerates from the top of the hill, her position will change as such:
-
-$$1, 2, 4, 7, 11, 16, 22, ...$$
-
-Using WolframAlpha, we can find a closed form for the number of accelerations required to reach the bottom of the hill given a current elevation:
-
-$$e = \frac{1}{2} * (a^2 - a + 2)$$
-
-Where e is the current elevation and a is the required accelerations. Finally, we must consider Alice's current velocity:
-
-$$e = \frac{1}{2} * ((a + v)^2 - (a + v) + 2)$$
-
-Thus the value of $h(s_i) = \floor{a}$, where $a$ is the positive value that satisfies the above equation (it is quadratic so there will be two a positive and negative solution).
-
-This will be an admissible heuristic as it is derived from the relaxed version of the original problem where Alice doesn't have to take into account decelerating as she approaches the bottom of the hill.
-
-
+\item \textbf{Formulate this problem as a CSP where the variables are words. List all the variables and constraints.}
+\item \textbf{Formulate this problem as a CSP where the variables are letters. List all the variables and constraints.}
+\item \textbf{Suppose we wish to make sure the the crossword puzzle we generate
+doesn't contain multiple words that are ``too similar.''  We'll say
+that words $w_1$ and $w_2$ are too similar if \emph{either} one can be
+obtained from the other by changing exactly one character \emph{or}
+one is a substring of the other.  For instance ``dog'' and ``dogs''
+are too similar (by the second constraint) as are ``dog'' and ``dog''
+(again, by the second constraint).  Similarly, ``cats'' and ``cots''
+are too similar (by the first constraint).  How would you specify
+these additional constraints in both the by-word and by-letter
+formulations?}
 \end{enumerate}
+
 
 \end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
