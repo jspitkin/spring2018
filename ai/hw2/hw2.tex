@@ -21,11 +21,11 @@
 \begin{enumerate}
 \item \textbf{Define the preconditions and postconditions (add and delete lists) for the two actions. Assume the agent can only pick up a single object with nothing on it, that it can only hold a single object at a time, and that it can only place the object on a horizontally-flat, open surface.}
 
-We will introduce two new fluents. The first \textit{flat(x)} is true if \textit{x} is a horizontally-flat box. The second \textit{in$\_$hand(x)} is true if \textit{x} is in the agent's hand. 
+We will introduce three new fluents. The first \textit{flat(x)} is true if \textit{x} is a horizontally-flat box. The second \textit{in$\_$hand(x)} is true if \textit{x} is in the agent's hand. Finally \textit{empty(hand)} indicates the agent's hand is empty.
 
-We will use \textit{clear(hand)} to indicate the agent's hand is empty. Otherwise \textit{clear(x)} indicates there is nothing on top of \textit{x} but it is not necessarily flat. Finally, \textit{on(x, y)} will be used to indicate object \textit{x} is on object \textit{y}.
+Additionally, \textit{clear(x)} indicates there is nothing on top of \textit{x} and it's not in the agent's hand, but it is not necessarily flat. Finally, \textit{on(x, y)} will be used to indicate object \textit{x} is on object \textit{y}.
 
-Using these, we can define the preconditions, add list, and delete list for \textit{pick$\_$up(x, y)} and \textit{place(x, y)}. Note I expanded the definition of \textit{pick$\_$up(x)} to \textit{pick$\_$up(x, y)} to specify the object under \textit{x}.
+Using these, we can define the preconditions, add list, and delete list for \textit{pick$\_$up(x, y)} and \textit{place(x, y)}. Note we expanded the definition of \textit{pick$\_$up(x)} to \textit{pick$\_$up(x, y)} to specify the object under \textit{x}.
 
 \begin{table}[H]
 \centering
@@ -35,7 +35,7 @@ Using these, we can define the preconditions, add list, and delete list for \tex
 \textbf{PC} & \textbf{D} & \textbf{A}\\
 \hline
 \textit{clear(x)} & \textit{on(x, y)} & \textit{clear(y)}\\ \hline
-\textit{clear(hand)} & \textit{clear(hand)} & \textit{in$\_$hand(x)}\\ \hline
+\textit{empty(hand)} & \textit{empty(hand)} & \textit{in$\_$hand(x)}\\ \hline
 \textit{on(x, y)} & \textit{clear(x)} &  \\ \hline
 \end{tabular}}
 \caption{Preconditions, add list, and delete list for \textit{pick$\_$up(x, y)}.}
@@ -48,23 +48,120 @@ Using these, we can define the preconditions, add list, and delete list for \tex
 \hline
 \textbf{PC} & \textbf{D} & \textbf{A}\\
 \hline
-\textit{in$\_$hand(x)} & \textit{in$\_$hand(x)} & \textit{clear(hand)}\\ \hline
+\textit{in$\_$hand(x)} & \textit{in$\_$hand(x)} & \textit{empty(hand)}\\ \hline
 \textit{clear(y)} & \textit{clear(y)} & \textit{clear(x)}\\ \hline
 \textit{flat(y)} &  & \textit{clear(table)} \\ \hline
+ & & \textit{on(x, y)} \\ \hline
 \end{tabular}}
 \caption{Preconditions, add list, and delete list for \textit{place(x, y)}.}
 \end{table}
 
+Note that \textit{clear(table)} is included in \textit{place(x, y)'s} add list in the case that $y$ is the table.
+
 \item \textbf{How would you express a goal that there are two towers, each of height 3 blocks, with pyramids on top of each tower?}
 
-The goal is defined as a conjunction of fluents (broken into two lines for readability):
+Let $B_1, B_2, B_3, B_4, B_5,$ and $B_6$ be blocks. The goal state can be defined generically as a conjunction of fluents (broken into two lines for readability):
 
-$$on(A, Table) \ \wedge \ on(B, A) \ \wedge \ on(C, B) \ \wedge \ \neg flat(C)$$
-$$\wedge \ on(D, Table) \ \wedge \ on(E, D) \ \wedge \ on(F, E) \ \wedge \ \neg flat(F)$$
+$$on(B_1, Table) \ \wedge \ on(B_2, B_1) \ \wedge \ on(B_3, B_2) \ \wedge \ \neg flat(B_3)$$
+$$\wedge \ on(B_4, Table) \ \wedge \ on(B_5, B_4) \ \wedge \ on(B_6, B_5) \ \wedge \ \neg flat(B_6)$$
 
-Where A-F are blocks. We don't have to be concerned with the peaks of the towers, C and F, having blocks on them (and increasing the height pass the goal height) as it's an invalid move to \textit{place} or \textit{move} a block onto a block that isn't horizontally flat.
+It is excessive to check if $B_1, B_2, B_4,$ and $B_5$ are \textit{flat} because the \textit{on(x, y)} operations aren't possible if $y$ isn't flat.
 
 \item \textbf{Suppose we introduce a new type of \emph{plank} object into the environment, which is long and skinny and must be supported by either the table or two blocks. What necessary changes would you have to make to your planning description to accommodate these changes?}
+
+First we will assume the supporting blocks must be flat.
+
+To accommodate the plank, we will add new actions, fluents, and goal states.
+
+The fluent \textit{clear(plank)} represents there being room to fit another block on the plank (similar to the table). We will add \textit{plank$
+\_$on(x, y, z)} which is true when plank instance x is on y and z. In the case of the plank being on the table, both y and z are the table to avoid making too many new fluents. To determine which actions are valid on which objects, a $plank(x)$ fluent is added that is true when x is a plank object.
+
+A variation of \textit{pick$\_$up(x, y)} and \textit{place(x, y)} are added as actions that be performed on the plank. They are defined as \textit{pick$\_$up$\_$plank(x, y, z)} where $x$ is the plank instance and $y$ and $z$ are it's supports and \textit{place$\_$plank(x, y, z)} where $x$ is the plank instance and $y$ and $z$ are the destination supports. For both of these actions, $y$ and $z$ can both be the table.
+
+The actions \textit{pick$\_$up(x, y)} and \textit{place(x, y)} need slight modifications to restrict x from being a plank and we will define the preconditions, add list, and delete list for the new actions.
+
+\begin{table}[H]
+\centering
+{\renewcommand{\arraystretch}{1.2}%
+\begin{tabular}{| c | c | c |}
+\hline
+\textbf{PC} & \textbf{D} & \textbf{A}\\
+\hline
+\textit{clear(x)} & \textit{on(x, y)} & \textit{clear(y)}\\ \hline
+\textit{empty(hand)} & \textit{empty(hand)} & \textit{in$\_$hand(x)}\\ \hline
+\textit{on(x, y)} & \textit{clear(x)} &  \\ \hline
+$\neg$\textit{plank(x)} & & \\ \hline
+\end{tabular}}
+\caption{Update preconditions, add list, and delete list for \textit{pick$\_$up(x, y)}.}
+\end{table}
+
+\begin{table}[H]
+\centering
+{\renewcommand{\arraystretch}{1.2}%
+\begin{tabular}{| c | c | c |}
+\hline
+\textbf{PC} & \textbf{D} & \textbf{A}\\
+\hline
+\textit{in$\_$hand(x)} & \textit{in$\_$hand(x)} & \textit{empty(hand)}\\ \hline
+\textit{clear(y)} & \textit{clear(y)} & \textit{clear(x)}\\ \hline
+\textit{flat(y)} &  & \textit{clear(table)} \\ \hline
+$\neg$\textit{plank(x)}& & \textit{on(x, y)} \\ \hline
+\end{tabular}}
+\caption{Updated preconditions, add list, and delete list for \textit{place(x, y)}.}
+\end{table}
+
+\begin{table}[H]
+\centering
+{\renewcommand{\arraystretch}{1.2}%
+\begin{tabular}{| c | c | c |}
+\hline
+\textbf{PC} & \textbf{D} & \textbf{A}\\
+\hline
+\textit{clear(x)} & \textit{plank$\_$on(x, y, z)} & \textit{clear(y)}\\ \hline
+\textit{empty(hand)} & \textit{empty(hand)} & \textit{clear(z)}\\ \hline
+\textit{plank$\_$on(x, y, z)} & \textit{clear(x)} &  \textit{in$\_$hand(x)}\\ \hline
+\textit{plank(x)} & & \\ \hline
+\end{tabular}}
+\caption{Preconditions, add list, and delete list for \textit{pick$\_$up$\_$plank(x, y, z)}.}
+\end{table}
+
+\begin{table}[H]
+\centering
+{\renewcommand{\arraystretch}{1.2}%
+\begin{tabular}{| c | c | c |}
+\hline
+\textbf{PC} & \textbf{D} & \textbf{A}\\
+\hline
+\textit{in$\_$hand(x)} & \textit{clear(y)}& \textit{empty(hand)}\\ \hline
+\textit{plank(x)}& \textit{clear(z)} &  \textit{clear(x)}\\ \hline
+\textit{clear(y)} & \textit{in$\_$hand(x)}& \textit{clear(table)}\\ \hline
+\textit{clear(z)} &  &  \textit{plank$\_$on(y, z)}\\ \hline
+\textit{flat(y)} & & \\ \hline
+\textit{flat(z)} &  &  \\ \hline
+\end{tabular}}
+\caption{Preconditions, add list, and delete list for \textit{place$\_$plank(x, y, z)}.}
+\end{table}
+
+Finally we will add three additional goal states to our goal state from part 2. The additional goals are: two towers with a plank on their bottom blocks, a plank on their middle blocks, or both. Let $B_1, B_2, B_3, B_4, B_5,$ and $B_6$ be blocks and $P_1$ and $P_2$ be planks.
+
+Two towers of height three with a plank on their bottom blocks:
+
+$$on(B_1, Table) \ \wedge \ on(B_2, P_1) \ \wedge \ on(B_3, B_2) \ \wedge \ \neg flat(B_3)$$
+$$\wedge \ on(B_4, Table) \ \wedge \ on(P_2, B_4) \ \wedge \ on(B_6, B_5) \ \wedge \ \neg flat(B_6) $$
+$$\wedge \ plank\_on(P_1, B_1, B_4)$$
+
+Two towers of height three with a plank on their middle blocks:
+
+$$on(B_1, Table) \ \wedge \ on(B_2, B_1) \ \wedge \ on(B_3, P_1) \ \wedge \ \neg flat(B_3)$$
+$$\wedge \ on(B_4, Table) \ \wedge \ on(B_5, B_4) \ \wedge \ on(B_6, P_1) \ \wedge \ \neg flat(B_6) $$
+$$\wedge \ plank\_on(P_1, B_2, B_5)$$
+
+Two towers of height three with a plank on both their bottom and middle blocks:
+
+$$on(B_1, Table) \ \wedge \ on(B_2, P_1) \ \wedge \ on(B_3, P_2) \ \wedge \ \neg flat(B_3)$$
+$$\wedge \ on(B_4, Table) \ \wedge \ on(B_5, B_4) \ \wedge \ on(B_6, P_2) \ \wedge \ \neg flat(B_6) $$
+$$\wedge \ plank\_on(P_1, B_1, B_4) \ \wedge \ plank\_on(P_2, B_2, B_5)$$
+
 \end{enumerate}
 
 \section{Crossword Puzzles}
