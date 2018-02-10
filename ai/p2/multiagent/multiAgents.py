@@ -48,7 +48,6 @@ class ReflexAgent(Agent):
         chosenIndex = random.choice(bestIndices) # Pick randomly among the best
 
         "Add more of your code here if you want to"
-
         return legalMoves[chosenIndex]
 
     def evaluationFunction(self, currentGameState, action):
@@ -66,15 +65,29 @@ class ReflexAgent(Agent):
         Print out these variables to see what you're getting, then combine them
         to create a masterful evaluation function.
         """
-        # Useful information you can extract from a GameState (pacman.py)
+        # Game state information
         successorGameState = currentGameState.generatePacmanSuccessor(action)
         newPos = successorGameState.getPacmanPosition()
         newFood = successorGameState.getFood()
-        newGhostStates = successorGameState.getGhostStates()
-        newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
-        "*** YOUR CODE HERE ***"
-        return successorGameState.getScore()
+        # Ignore the 'Stop' action to improve finish time
+        if action == 'Stop':
+            return 0
+
+        # Check if this action will cause a collision with a ghost
+        for ghostState in successorGameState.getGhostStates():
+            if ghostState.getPosition() == newPos:
+                return 0
+
+        # Check if this action will get a food pellet
+        # Return 2 so this beats a MD score of 1 from another action
+        if currentGameState.getNumFood() > successorGameState.getNumFood():
+            return 2
+
+        # Otherwise return the reciprocal of the closest pellet
+        foodManDists = [util.manhattanDistance(newPos, x) for x in newFood.asList()]
+        return 1.0 / min(foodManDists)
+
 
 def scoreEvaluationFunction(currentGameState):
     """
