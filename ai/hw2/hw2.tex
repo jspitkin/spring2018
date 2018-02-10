@@ -21,7 +21,7 @@
 \begin{enumerate}
 \item \textbf{Define the preconditions and postconditions (add and delete lists) for the two actions. Assume the agent can only pick up a single object with nothing on it, that it can only hold a single object at a time, and that it can only place the object on a horizontally-flat, open surface.}
 
-We will introduce three new fluents. The first \textit{flat(x)} is true if \textit{x} is a horizontally-flat box. The second \textit{in$\_$hand(x)} is true if \textit{x} is in the agent's hand. Finally \textit{empty(hand)} indicates the agent's hand is empty.
+We will introduce three new fluents. The first \textit{flat(x)} is true if \textit{x} is a horizontally-flat surface. The second \textit{in$\_$hand(x)} is true if \textit{x} is in the agent's hand. Finally \textit{empty(hand)} indicates the agent's hand is empty.
 
 Additionally, \textit{clear(x)} indicates there is nothing on top of \textit{x} and it's not in the agent's hand, but it is not necessarily flat. Finally, \textit{on(x, y)} will be used to indicate object \textit{x} is on object \textit{y}.
 
@@ -69,14 +69,14 @@ It is excessive to check if $B_1, B_2, B_4,$ and $B_5$ are \textit{flat} because
 
 \item \textbf{Suppose we introduce a new type of \emph{plank} object into the environment, which is long and skinny and must be supported by either the table or two blocks. What necessary changes would you have to make to your planning description to accommodate these changes?}
 
-First we will assume the supporting blocks must be flat.
+First we will assume the supporting blocks must be flat, have equal height, and planks cannot be placed on a plank (must be placed on the table or blocks).
 
-To accommodate the plank, we will add new actions, fluents, and goal states.
+To accommodate the plank, we will add new fluents and actions.
 
 The fluent \textit{clear(plank)} represents there being room to fit another block on the plank (similar to the table). We will add \textit{plank$
-\_$on(x, y, z)} which is true when plank instance x is on y and z. In the case of the plank being on the table, both y and z are the table to avoid making too many new fluents. To determine which actions are valid on which objects, a $plank(x)$ fluent is added that is true when x is a plank object.
+\_$on(x, y, z)} which is true when plank instance x is on y and z. In the case of the plank being on the table, both y and z are the table to avoid making too many new fluents. To determine which actions are valid on which objects, a $plank(x)$ fluent is added that is true when x is a plank object. We will add $same\_height(x, y)$ (returns true if x and y have equal heights) to enforce blocks under a plank being the same height.
 
-A variation of \textit{pick$\_$up(x, y)} and \textit{place(x, y)} are added as actions that be performed on the plank. They are defined as \textit{pick$\_$up$\_$plank(x, y, z)} where $x$ is the plank instance and $y$ and $z$ are it's supports and \textit{place$\_$plank(x, y, z)} where $x$ is the plank instance and $y$ and $z$ are the destination supports. For both of these actions, $y$ and $z$ can both be the table.
+A variation of \textit{pick$\_$up(x, y)} and \textit{place(x, y)} are added as actions that can be performed on a plank. They are defined as \textit{pick$\_$up$\_$plank(x, y, z)} where $x$ is the plank instance and $y$ and $z$ are its supports and \textit{place$\_$plank(x, y, z)} where $x$ is the plank instance and $y$ and $z$ are the destination supports. For both of these actions, $y$ and $z$ can both be the table.
 
 The actions \textit{pick$\_$up(x, y)} and \textit{place(x, y)} need slight modifications to restrict x from being a plank and we will define the preconditions, add list, and delete list for the new actions.
 
@@ -138,36 +138,62 @@ $\neg$\textit{plank(x)}& & \textit{on(x, y)} \\ \hline
 \textit{clear(z)} &  &  \textit{plank$\_$on(y, z)}\\ \hline
 \textit{flat(y)} & & \\ \hline
 \textit{flat(z)} &  &  \\ \hline
+\textit{same$\_$height(y, z)} & & \\ \hline
 \end{tabular}}
 \caption{Preconditions, add list, and delete list for \textit{place$\_$plank(x, y, z)}.}
 \end{table}
 
-Finally we will add three additional goal states to our goal state from part 2. The additional goals are: two towers with a plank on their bottom blocks, a plank on their middle blocks, or both. Let $B_1, B_2, B_3, B_4, B_5,$ and $B_6$ be blocks and $P_1$ and $P_2$ be planks.
-
-Two towers of height three with a plank on their bottom blocks:
-
-$$on(B_1, Table) \ \wedge \ on(B_2, P_1) \ \wedge \ on(B_3, B_2) \ \wedge \ \neg flat(B_3)$$
-$$\wedge \ on(B_4, Table) \ \wedge \ on(P_2, B_4) \ \wedge \ on(B_6, B_5) \ \wedge \ \neg flat(B_6) $$
-$$\wedge \ plank\_on(P_1, B_1, B_4)$$
-
-Two towers of height three with a plank on their middle blocks:
-
-$$on(B_1, Table) \ \wedge \ on(B_2, B_1) \ \wedge \ on(B_3, P_1) \ \wedge \ \neg flat(B_3)$$
-$$\wedge \ on(B_4, Table) \ \wedge \ on(B_5, B_4) \ \wedge \ on(B_6, P_1) \ \wedge \ \neg flat(B_6) $$
-$$\wedge \ plank\_on(P_1, B_2, B_5)$$
-
-Two towers of height three with a plank on both their bottom and middle blocks:
-
-$$on(B_1, Table) \ \wedge \ on(B_2, P_1) \ \wedge \ on(B_3, P_2) \ \wedge \ \neg flat(B_3)$$
-$$\wedge \ on(B_4, Table) \ \wedge \ on(B_5, B_4) \ \wedge \ on(B_6, P_2) \ \wedge \ \neg flat(B_6) $$
-$$\wedge \ plank\_on(P_1, B_1, B_4) \ \wedge \ plank\_on(P_2, B_2, B_5)$$
+We won't consider goal states that contain a plank as a result of a conversation with the course TA Amanda.
 
 \end{enumerate}
+\newpage
 
 \section{Crossword Puzzles}
 \begin{enumerate}
 \item \textbf{Formulate this problem as a CSP where the variables are words. List all the variables and constraints.}
+
+For this CSP we have two variables: words and spans of blank squares that need to be assigned words. Let each $w_i$ be a word in the provided dictionary and each span $s_i$ is provided by the problem.
+
+$$w_i \in Dictionary$$
+$$s_i \in Grid$$
+
+The goal is then to assign a word $w_i$ to each span $s_i$ such that the constraints of the grid are met. There are three constraints that must be met: each span must be assigned a word of matching length and any intersecting words must agree at their intersection.
+
+First, the length and assignment constraints:
+
+$$\forall_{i} \ Length(w_i) = Length(s_i)$$
+$$\forall_{i} \ Assigned(s_i)$$
+
+Each span on the grid is assigned a word and that word is of equal length to the span.
+
+For the intersecting constraint, we will define a constraint \textit{IntersectMatch(x, y)}. It is defined as: if x and y intersect on the grid, then they must have the same letter at that intersection. We will check that this is satisfied for each pair of words:
+
+$$\forall_{i, j} \ IntersectMatch(w_i, w_j)$$
+
+This implication could be rewritten as:
+
+$$\forall_{i, j} \ \neg Intersect(w_i, w_j) \lor (Intersect(w_i, w_j) \land Match(w_i, w_j))$$
+
 \item \textbf{Formulate this problem as a CSP where the variables are letters. List all the variables and constraints.}
+
+Next we will consider the problem at a character level. To keep things simple we will assume all the words in the provided dictionary only contain lower-case letters and no punctuation. Let each character be $c_{i, j}$ and each cell in the grid provided by the problem to be $g_{i, j}$.
+
+$$c_{i,j} \in \{a, b, c, ... , x, y, z, \epsilon \}$$
+$$g_{i,j} \in \{blank, shaded\}$$
+
+With $\epsilon$ indicating no assignment. First we will ensure that each spot in the grid $g_{i ,j}$ is assigned a character $c_{i, j}$. If $g_{i, j}$ is shaded then $c_{i, j}$ must equal $\epsilon$. If $g_{i, j}$ is blank then $c_{i, j}$ must \textit{not} equal $\epsilon$.
+
+$$\forall_{i, j} \ (c_{i, j}, \ g_{i, j}) \in \{(\epsilon, shaded), (a, blank), ... , (z, blank)\}$$
+
+Next, we must constrain each span of characters to being a word present in the dictionary. A span of characters is defined by a sequence of blank cells followed by a sequence of shaded cells or the edge of the board. Spans can run left-to-right or top-to-bottom.
+
+Consider the functions \textit{IsVertSpan($g_{x, y}$, $g_{z, y}$)} and \textit{IsHorizSpan($g_{x, y}$, $g_{x, z}$)}. These functions are similar in that they return true if a valid span on the grid (as defined in the above paragraph) exists between the start and end cells inclusively. They differ in that they are both fixed in either the vertical or horizontal direction as words cannot run on a diagonal. A final function $InDictionary(c_{x, y}, c_{z,y})$ returns true if a word created by the character span is in the provided dictionary.
+
+$$\forall_{x, y, z} \ \neg IsVertSpan(g_{x, y}, g_{z, y}) \lor (IsVertSpan(g_{x, y}, g_{z, y}) \land InDictionary(c_{x, y}, c_{z,y}))$$
+$$\forall_{x, y, z} \ \neg IsHorizSpan(g_{x, y}, g_{x, z}) \lor (IsHorizSpan(g_{x, y}, g_{x, z}) \land InDictionary(c_{x, y}, c_{x,z}))$$
+
+That is, all spans are checked and for all legal spans their assigned words must be present in the dictionary.
+
 \item \textbf{Suppose we wish to make sure the the crossword puzzle we generate
 doesn't contain multiple words that are ``too similar.''  We'll say
 that words $w_1$ and $w_2$ are too similar if \emph{either} one can be
@@ -178,6 +204,21 @@ are too similar (by the second constraint) as are ``dog'' and ``dog''
 are too similar (by the first constraint).  How would you specify
 these additional constraints in both the by-word and by-letter
 formulations?}
+
+\textit{Additional constraints for by-word formation:} Each word chosen for the crossword puzzle must have an edit distance of greater than 1 with all other words. Edit distance is how many operations must be performed on a word to arrive at another word.
+
+$$\forall_{i, j} \ i \neq j \ EditDistance(w_i, w_j) > 1$$
+
+\textit{Additional constraints for by-character formation:} The constraint is similar as for words but we must determine which spans of characters are considered words. In part 2 we showed that a grid span must be valid (a span of cells terminated by a shaded square or the edge of the board) and the assigned character span is in the dictionary. We will capture that logic in a function called $Valid$ to create valid spans:
+
+$$s_i \in \{ x : \forall_{a,b,c,d} \ Valid(c_{a,b}, c_{c,d})\}$$
+
+Now that we have a collection of valid character spans that constitute words, we just need to make sure those words have the proper edit distance with all other words:
+
+$$\forall_{i, j} \ i \neq j \ EditDistance(s_i, s_j) > 1$$
+
+
+
 \end{enumerate}
 
 
