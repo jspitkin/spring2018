@@ -15,6 +15,7 @@
 from util import manhattanDistance
 from game import Directions
 import random, util
+import math
 
 from game import Agent
 
@@ -141,8 +142,39 @@ class MinimaxAgent(MultiAgentSearchAgent):
           gameState.getNumAgents():
             Returns the total number of agents in the game
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        maxAction = None
+        maxActionValue = float("-inf")
+        for action in gameState.getLegalActions(0):
+            actionState = gameState.generateSuccessor(0, action)
+            actionValue = self.value(actionState, 1, 1)
+            if actionValue > maxActionValue:
+                maxActionValue = actionValue
+                maxAction = action
+        return maxAction
+
+    def value(self, gameState, level, depth):
+        agent = level % gameState.getNumAgents()
+        if depth == self.depth or gameState.isWin() or gameState.isLose():
+            return self.evaluationFunction(gameState)
+        if agent == 0:
+            return self.maxValue(gameState, level, depth)
+        return self.minValue(gameState, level, depth)
+
+    def maxValue(self, gameState, level, depth):
+        maxVal = float("-inf")
+        agent = level % gameState.getNumAgents()
+        for action in gameState.getLegalActions(agent):
+            actionState = gameState.generateSuccessor(agent, action)
+            maxVal = max(maxVal, self.value(actionState, level+1, depth+1))
+        return maxVal
+
+    def minValue(self, gameState, level, depth):
+        minVal = float("inf")
+        agent =  level % gameState.getNumAgents()
+        for action in gameState.getLegalActions(agent):
+            actionState = gameState.generateSuccessor(agent, action)
+            minVal = min(minVal, self.value(actionState, level+1, depth+1))
+        return minVal
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
