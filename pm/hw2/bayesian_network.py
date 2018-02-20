@@ -8,54 +8,29 @@ def productFactor(A, B):
     D = reshape(B, A)
     for index, row in C.iterrows():
         C.loc[index, 'probs'] = C.loc[index, 'probs'] * D.loc[index, 'probs']
-    return C
-
-def get_prob(A, var_list, value_list):
-    """ Returns the probability from a table A where all values in var_list
-        are set to their respective values in value_list. -1 if such a 
-        row doesn't exist.
-    """
-    for A_index, row, in A.iterrows():
-        found = True
-        for index, var in enumerate(var_list):
-            if A.loc[A_index, var] != value_list[index]:
-                found = False
-                break
-        if found:
-            return A.loc[A_index, 'probs']
-    return -1
-
-def reshape(A, B):
-    """ Returns of probability table C that is of the proper shape to
-        represent the product of A and B. The probabilities in the table
-        will only reflect the variables in table A.
-    """
-    A_vars = A.columns.values.tolist()[1:]
-    B_vars = B.columns.values.tolist()[1:]
-    product_vars = list(set(A_vars).union(set(B_vars)))
-    level_list = []
-    rows = 1
-    for var in product_vars:
-        if var in A_vars:
-            level_list.append(A[var].unique())
-            rows *= len(A[var].unique())
-        else:
-            level_list.append(B[var].unique())
-            rows *= len(B[var].unique())
-    probabilities = [0] * rows
-    C  = createCPT(product_vars, probabilities, level_list)
-    for index, row in C.iterrows():
-        rel_values = []
-        for var in A_vars:
-            rel_values.append(C.loc[index, var])
-        C.loc[index, 'probs'] = get_prob(A, A_vars, rel_values)
+    print(C)
     return C
 
 def marginalizeFactor(A, margVar):
     """ Marginalizes margVar from a single factor A.
         Assume that margVar appears on the left side of the conditional.
     """
-    return 0
+    new_vars = A.columns.values.tolist()[1:]
+    new_vars.remove(margVar)
+    level_list = []
+    rows = 1
+    for var in new_vars:
+        level_list.append(A[var].unique())
+        rows *= len(A[var].unique())
+    probabilities = [0] * rows
+    B = createCPT(new_vars, probabilities, level_list)
+    for index, row in B.iterrows():
+        rel_values = []
+        for var in new_vars:
+            rel_values.append(B.loc[index, var])
+        B.loc[index, 'probs'] = get_prob_sum(A, new_vars, rel_values)
+    print(B)
+    return B
 
 def marginalize(bayesNet, margVars):
     """ Takes in a bayesNet and marginalizes out all variables in margVars.
@@ -95,3 +70,60 @@ def createCPT(varnames, probs, levelsList):
         k = k * numLevs
 
     return cpt
+
+def get_prob(A, var_list, value_list):
+    """ Returns the probability from a table A where all values in var_list
+        are set to their respective values in value_list. -1 if such a 
+        row doesn't exist.
+    """
+    for A_index, row in A.iterrows():
+        match = True
+        for index, var in enumerate(var_list):
+            if A.loc[A_index, var] != value_list[index]:
+                match = False
+                break
+        if match:
+            return A.loc[A_index, 'probs']
+    return -1
+
+def get_prob_sum(A, var_list, value_list):
+    """ Returns the sum of probabilities from a table A where all the values
+        in var_list are set to their respective values in value_list. -1 if no
+        such rows exist.
+    """
+    sum = 0
+    for A_index, row in A.iterrows():
+        match = True
+        for index, var in enumerate(var_list):
+            if A.loc[A_index, var] != value_list[index]:
+                match = False
+                break
+        if match:
+            sum += A.loc[A_index, 'probs']
+    return sum
+
+def reshape(A, B):
+    """ Returns of probability table C that is of the proper shape to
+        represent the product of A and B. The probabilities in the table
+        will only reflect the variables in table A.
+    """
+    A_vars = A.columns.values.tolist()[1:]
+    B_vars = B.columns.values.tolist()[1:]
+    new_vars = list(set(A_vars).union(set(B_vars)))
+    level_list = []
+    rows = 1
+    for var in new_vars:
+        if var in A_vars:
+            level_list.append(A[var].unique())
+            rows *= len(A[var].unique())
+        else:
+            level_list.append(B[var].unique())
+            rows *= len(B[var].unique())
+    probabilities = [0] * rows
+    C  = createCPT(new_vars, probabilities, level_list)
+    for index, row in C.iterrows():
+        rel_values = []
+        for var in A_vars:
+            rel_values.append(C.loc[index, var])
+        C.loc[index, 'probs'] = get_prob(A, A_vars, rel_values)
+    return C
