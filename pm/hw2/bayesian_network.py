@@ -4,27 +4,47 @@ def productFactor(A, B):
     """ Computes the factor between A and B and returns the result.
         Assumes the product of A and B is a valid operation.
     """
+    C = reshape(A, B)
+    D = reshape(B, A)
+    # Compute the probabilities
+    for index, row in C.iterrows():
+        C.loc[index, 'probs'] = C.loc[index, 'probs'] * D.loc[index, 'probs']
+    print(C)
+    return C
+
+def get_prob(A, var_list, value_list):
+    for A_index, row, in A.iterrows():
+        found = True
+        for index, var in enumerate(var_list):
+            if A.loc[A_index, var] != value_list[index]:
+                found = False
+                break
+        if found:
+            return A.loc[A_index, 'probs']
+    return -1
+
+def reshape(A, B):
     A_vars = A.columns.values.tolist()[1:]
     B_vars = B.columns.values.tolist()[1:]
     product_vars = list(set(A_vars).union(set(B_vars)))
+    # Create a data frame of the proper shape for the product
     level_list = []
-    probabilities = []
+    rows = 1
     for var in product_vars:
         if var in A_vars:
             level_list.append(A[var].unique())
-            for x in A[var].unique():
-                probabilities.append(0)
+            rows *= len(A[var].unique())
         else:
             level_list.append(B[var].unique())
-            for x in B[var].unique():
-                probabilities.append(0)
-
-    product = createCPT(product_vars, probabilities, level_list)
-    print(product)
-    for index, row in product.iterrows():
-        product.loc[index, 'probs'] = B.loc[index, 'probs']
-    print(product)
-    return product
+            rows *= len(B[var].unique())
+    probabilities = [0] * rows
+    C  = createCPT(product_vars, probabilities, level_list)
+    for index, row in C.iterrows():
+        rel_values = []
+        for var in A_vars:
+            rel_values.append(C.loc[index, var])
+        C.loc[index, 'probs'] = get_prob(A, A_vars, rel_values)
+    return C
 
 def marginalizeFactor(A, margVar):
     """ Marginalizes margVar from a single factor A.

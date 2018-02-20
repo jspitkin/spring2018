@@ -9,9 +9,16 @@ zy = createCPT(['z','y'], [0.5, 0.6, 0.5, 0.4], [['T','F'], ['T','F']])
 
 xyzNet = [x, yx, zy]
 
+b = createCPT(['battery'], [0.9, 0.1], [[1, 0]])
+f = createCPT(['fuel'], [0.9, 0.1], [[1, 0]])
+gbf = createCPT(['gauge', 'battery', 'fuel'], [0.8, 0.2, 0.2, 0.1, 0.2, 0.8, 0.8, 0.9], [[1, 0], [1, 0], [1, 0]])
+productFactor(productFactor(b, f), gbf)
+productFactor(productFactor(gbf, f), b)
+exit()
+#productFactor(b, f)
+#exit()
 ## Some simple operations you might try to check your code
 productFactor(x, yx)
-exit()
 productFactor(productFactor(x, yx), zy)
 marginalizeFactor(productFactor(x, yx), 'x')
 marginalizeFactor(productFactor(yx, zy), 'z')
