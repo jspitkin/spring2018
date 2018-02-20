@@ -6,13 +6,15 @@ def productFactor(A, B):
     """
     C = reshape(A, B)
     D = reshape(B, A)
-    # Compute the probabilities
     for index, row in C.iterrows():
         C.loc[index, 'probs'] = C.loc[index, 'probs'] * D.loc[index, 'probs']
-    print(C)
     return C
 
 def get_prob(A, var_list, value_list):
+    """ Returns the probability from a table A where all values in var_list
+        are set to their respective values in value_list. -1 if such a 
+        row doesn't exist.
+    """
     for A_index, row, in A.iterrows():
         found = True
         for index, var in enumerate(var_list):
@@ -24,10 +26,13 @@ def get_prob(A, var_list, value_list):
     return -1
 
 def reshape(A, B):
+    """ Returns of probability table C that is of the proper shape to
+        represent the product of A and B. The probabilities in the table
+        will only reflect the variables in table A.
+    """
     A_vars = A.columns.values.tolist()[1:]
     B_vars = B.columns.values.tolist()[1:]
     product_vars = list(set(A_vars).union(set(B_vars)))
-    # Create a data frame of the proper shape for the product
     level_list = []
     rows = 1
     for var in product_vars:
