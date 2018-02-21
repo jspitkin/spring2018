@@ -5,7 +5,7 @@ def main():
     #example_1()
 
     # x -> y -> z
-    #example_2()
+    example_2()
 
     # Bishop book example
     #example_3()
@@ -24,8 +24,7 @@ def example_1():
 
     coldNet = [L, CL, FC, RC]
 
-    productFactor(productFactor(CL, FC), RC)
-    A = productFactor(L, productFactor(productFactor(CL, FC), RC))
+    productFactor(L, productFactor(productFactor(CL, FC), RC))
 
 ####################################
 ## Simple chain example: x -> y -> z

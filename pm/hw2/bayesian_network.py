@@ -43,7 +43,20 @@ def observe(bayesNet, obsVars, obsVals):
         to the corresponding list of values obsVals. The factors are
         not normalized as probabilities.
     """
-    return 0
+    for table in bayesNet:
+        print('$$$')
+        print(table)
+        print('---')
+        table_vars = table.columns.values.tolist()[1:]
+        for index, row in table.iterrows():
+            for var_index, var in enumerate(obsVars):
+                if var not in table_vars:
+                    continue
+                if table.loc[index, var] != obsVals[var_index]:
+                    table.drop(index, inplace=True)
+                    break
+        print(table)
+    return
 
 def infer(bayesNet, margVars, obsVars, obsVals):
     """ Takes in a bayesNet and returns a single joint proability table
