@@ -238,9 +238,6 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         for action in gameState.getLegalActions(0):
             actionState = gameState.generateSuccessor(0, action)
             actionValue = self.value(actionState, 1, 0)
-            print "Action:", action
-            print "Score: ", actionValue
-            print ""
             if actionValue > maxActionValue:
                 maxActionValue = actionValue
                 maxAction = action
@@ -286,22 +283,25 @@ def betterEvaluationFunction(currentGameState):
       Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
       evaluation function (question 5).
 
-      DESCRIPTION: <write something here so we know what you did>
+      DESCRIPTION: See analysis document.
     """
     pos = currentGameState.getPacmanPosition()
     food = currentGameState.getFood().asList()
     capsules = currentGameState.getCapsules()
     gameScore = currentGameState.getScore()
-    remainingFood = currentGameState.getNumFood() + 1
     foodManDists = [util.manhattanDistance(pos, x) for x in food]
     capsuleManDists = [util.manhattanDistance(pos, x) for x in capsules]
+    
     if len(foodManDists) == 0:
-        foodManDists = [1]
-    scaredGhosts = False
-    scaredTimes = [s.scaredTimer for s in currentGameState.getGhostStates()]
-    scaredSum = sum(scaredTimes)
+        foodManDists = [0.1]
+    if len(capsuleManDists) == 0:
+        capsuleManDists = [0.1]
 
-    return 1.0 / min(foodManDists) + gameScore + scaredSum
+    score = 1.0 / min(foodManDists)
+    score += gameScore
+    score += 1.0 / max(capsuleManDists)
+    score -= len(capsules) * 21
+    return score
 
 # Abbreviation
 better = betterEvaluationFunction
