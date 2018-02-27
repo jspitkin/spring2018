@@ -8,15 +8,14 @@ def productFactor(A, B):
     D = reshape(B, A)
     for index, row in C.iterrows():
         C.loc[index, 'probs'] = C.loc[index, 'probs'] * D.loc[index, 'probs']
-    print(C)
     return C
 
 def marginalizeFactor(A, margVar):
     """ Marginalizes margVar from a single factor A.
         Assume that margVar appears on the left side of the conditional.
     """
-    new_vars = A.columns.values.tolist()[1:]
-    new_vars.remove(margVar)
+    new_vars = A.axes[1][1:]
+    new_vars = new_vars.drop(margVar)
     level_list = []
     rows = 1
     for var in new_vars:
@@ -29,14 +28,25 @@ def marginalizeFactor(A, margVar):
         for var in new_vars:
             rel_values.append(B.loc[index, var])
         B.loc[index, 'probs'] = get_prob_sum(A, new_vars, rel_values)
-    print(B)
     return B
 
 def marginalize(bayesNet, margVars):
     """ Takes in a bayesNet and marginalizes out all variables in margVars.
         This is done using variable elimination.
     """
-    return 0
+    marg_net = bayesNet[:]
+    for var in margVars:
+        tables_to_factor = []    
+        tables_to_keep = []
+        for table in marg_net:
+            if var in table.axes[1][1:]:
+                tables_to_factor.append(table)
+            else:
+                tables_to_keep.append(table)
+        factor = factor_tables(tables_to_factor)
+        marg_factor = marginalizeFactor(factor, var)
+        marg_net = tables_to_keep + [marg_factor]
+    return marg_net
 
 def observe(bayesNet, obsVars, obsVals):
     """ Takes in a bayesNet and and sets the list of variables obsVars
@@ -44,10 +54,7 @@ def observe(bayesNet, obsVars, obsVals):
         not normalized as probabilities.
     """
     for table in bayesNet:
-        print('$$$')
-        print(table)
-        print('---')
-        table_vars = table.columns.values.tolist()[1:]
+        table_vars = table.axes[1][1:]
         for index, row in table.iterrows():
             for var_index, var in enumerate(obsVars):
                 if var not in table_vars:
@@ -55,8 +62,7 @@ def observe(bayesNet, obsVars, obsVals):
                 if table.loc[index, var] != obsVals[var_index]:
                     table.drop(index, inplace=True)
                     break
-        print(table)
-    return
+    return bayesNet
 
 def infer(bayesNet, margVars, obsVars, obsVals):
     """ Takes in a bayesNet and returns a single joint proability table
@@ -64,7 +70,18 @@ def infer(bayesNet, margVars, obsVars, obsVals):
         set of variables. The values in the table are normalized as
         probabilities.
     """
-    return 0 
+    observed_net = observe(bayesNet, obsVars, obsVals)
+    marg_net = marginalize(observed_net, margVars)
+    factor = factor_tables(marg_net)
+    return normalize(factor)
+
+def normalize(factor):
+    Z = sum(factor['probs'])
+    norm_factor = factor[:]
+    for index, rows in norm_factor.iterrows():
+        normalized = norm_factor.loc[index, 'probs'] / Z
+        norm_factor.loc[index, 'probs'] = normalized
+    return norm_factor
 
 def createCPT(varnames, probs, levelsList):
     cpt = pd.DataFrame({'probs': probs})
@@ -83,6 +100,17 @@ def createCPT(varnames, probs, levelsList):
         k = k * numLevs
 
     return cpt
+
+def factor_tables(tables):
+    """ Takes a list of tables and returns a single factor table. """
+    if len(tables) == 0:
+        return None
+    if len(tables) == 1:
+        return tables[0]
+    factor = productFactor(tables[0], tables[1])
+    for table in tables[2:]:
+        factor = productFactor(factor, table)
+    return factor
 
 def get_prob(A, var_list, value_list):
     """ Returns the probability from a table A where all values in var_list
@@ -120,9 +148,9 @@ def reshape(A, B):
         represent the product of A and B. The probabilities in the table
         will only reflect the variables in table A.
     """
-    A_vars = A.columns.values.tolist()[1:]
-    B_vars = B.columns.values.tolist()[1:]
-    new_vars = list(set(A_vars).union(set(B_vars)))
+    A_vars = A.axes[1][1:]
+    B_vars = B.axes[1][1:]
+    new_vars = A_vars.union(B_vars).unique()
     level_list = []
     rows = 1
     for var in new_vars:

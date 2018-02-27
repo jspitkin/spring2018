@@ -5,10 +5,10 @@ def main():
     #example_1()
 
     # x -> y -> z
-    example_2()
+    #example_2()
 
     # Bishop book example
-    #example_3()
+    example_3()
 
     # Kevin Murphy example
     #example_4()
@@ -37,22 +37,27 @@ def example_2():
     xyzNet = [x, yx, zy]
 
     ## Some simple operations you might try to check your code
-    productFactor(x, yx)
-    productFactor(productFactor(x, yx), zy)
+    #productFactor(x, yx)
+    #xyz = productFactor(productFactor(x, yx), zy)
 
-    marginalizeFactor(productFactor(x, yx), 'x')
-    marginalizeFactor(productFactor(yx, zy), 'z')
+    #marginalizeFactor(productFactor(x, yx), 'x')
+    #marginalizeFactor(productFactor(yx, zy), 'z')
+    #marginalizeFactor(productFactor(productFactor(zy, x), yx), 'y')
 
     ## Notice in the observe function, you just need to delete rows that are
     ## inconsistent with the given observations. Factors do not need to be combined
     ## or normalized in this step.
-    observe(xyzNet, 'x', 'T')
-    observe(xyzNet, ['x', 'y'], ['T', 'T'])
+    for table in xyzNet:
+        print('---Before---')
+        print(table)
+        print()
+    xyzNet = observe(xyzNet, 'x', 'T')
+    #observe(xyzNet, ['x', 'y'], ['T', 'T'])
 
     ## Marginalize must first combine all factors involving the variable to
     ## marginalize. Again, this operation may lead to factors that aren't
     ## probabilities.
-    marginalize(xyzNet, 'x')
+    xyzNet = marginalize(xyzNet, ['y', 'z'])
     marginalize(xyzNet, 'y')
     marginalize(xyzNet, 'z')
     marginalize(xyzNet, ['x', 'z'])
@@ -70,22 +75,23 @@ def example_3():
     ## Some examples:
     ## Notice that different order of operations give the same answer
     ## (rows/columns may be permuted)
-    productFactor(productFactor(b, f), gbf)
-    productFactor(productFactor(gbf, f), b)
-    marginalizeFactor(productFactor(gbf, b), 'gauge')
-    productFactor(marginalizeFactor(gbf, 'gauge'), b)
+    #productFactor(productFactor(b, f), gbf)
+    #productFactor(productFactor(gbf, f), b)
+    #marginalizeFactor(productFactor(gbf, b), 'gauge')
+    #productFactor(marginalizeFactor(gbf, 'gauge'), b)
 
-    productFactor(marginalizeFactor(productFactor(gbf, b), 'battery'), f)
-    marginalizeFactor(productFactor(productFactor(gbf, f), b), 'battery')
+    #productFactor(marginalizeFactor(productFactor(gbf, b), 'battery'), f)
+    #marginalizeFactor(productFactor(productFactor(gbf, f), b), 'battery')
 
-    marginalizeFactor(productFactor(marginalizeFactor(productFactor(gbf, b), 'battery'), f), 'gauge')
-    marginalizeFactor(productFactor(marginalizeFactor(productFactor(gbf, b), 'battery'), f), 'fuel')
+    #marginalizeFactor(productFactor(marginalizeFactor(productFactor(gbf, b), 'battery'), f), 'gauge')
+    #marginalizeFactor(productFactor(marginalizeFactor(productFactor(gbf, b), 'battery'), f), 'fuel')
 
     ## Examples computed in book (see pg. 377)
-    infer(carNet, ['battery', 'fuel'], [], [])      ## (8.30)
-    infer(carNet, ['battery'], 'fuel', 0)           ## (8.31)
-    infer(carNet, ['battery'], 'gauge', 0)          ## (8.32)
-    infer(carNet, [], ['gauge', 'battery'], [0, 0]) ## (8.33)
+    #infer(carNet, ['battery', 'fuel'], ['gauge'], [0])      ## (8.30)
+    #infer(carNet, ['battery'], ['fuel'], [0])           ## (8.31)
+    infer(carNet, ['battery'], ['gauge'], [0])          ## (8.32)
+    A = infer(carNet, [], ['gauge', 'battery'], [0, 0]) ## (8.33)
+    print(A)
 
 ###########################################################################
 ## Kevin Murphy's Example: http://www.cs.ubc.ca/~murphyk/Bayes/bnintro.html
