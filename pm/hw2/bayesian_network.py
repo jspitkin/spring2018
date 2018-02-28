@@ -1,4 +1,11 @@
+# Jake Pitkin
+# Feb 19 2018
+#
 import pandas as pd
+import numpy as np
+import copy
+from functools import reduce
+pd.options.mode.chained_assignment = None
 
 def productFactor(A, B):
     """ Computes the factor between A and B and returns the result.
@@ -11,7 +18,7 @@ def productFactor(A, B):
     return C
 
 def marginalizeFactor(A, margVar):
-    """ Marginalizes margVar from a single factor A.
+    """ Marginalizes margVar from a single factor A and returns the result.
         Assume that margVar appears on the left side of the conditional.
     """
     new_vars = A.axes[1][1:]
@@ -31,10 +38,10 @@ def marginalizeFactor(A, margVar):
     return B
 
 def marginalize(bayesNet, margVars):
-    """ Takes in a bayesNet and marginalizes out all variables in margVars.
-        This is done using variable elimination.
+    """ Takes in a bayesNet and marginalizes out all variables in margVars
+        and returns the result. This is done using variable elimination.
     """
-    marg_net = bayesNet[:]
+    marg_net = copy.deepcopy(bayesNet)
     for var in margVars:
         tables_to_factor = []    
         tables_to_keep = []
@@ -50,10 +57,11 @@ def marginalize(bayesNet, margVars):
 
 def observe(bayesNet, obsVars, obsVals):
     """ Takes in a bayesNet and and sets the list of variables obsVars
-        to the corresponding list of values obsVals. The factors are
-        not normalized as probabilities.
+        to the corresponding list of values obsVals and returns the result. 
+        The factors are not normalized as probabilities.
     """
-    for table in bayesNet:
+    observe_net = copy.deepcopy(bayesNet)
+    for table in observe_net:
         table_vars = table.axes[1][1:]
         for index, row in table.iterrows():
             for var_index, var in enumerate(obsVars):
@@ -62,7 +70,7 @@ def observe(bayesNet, obsVars, obsVals):
                 if table.loc[index, var] != obsVals[var_index]:
                     table.drop(index, inplace=True)
                     break
-    return bayesNet
+    return observe_net
 
 def infer(bayesNet, margVars, obsVars, obsVals):
     """ Takes in a bayesNet and returns a single joint proability table
@@ -75,15 +83,8 @@ def infer(bayesNet, margVars, obsVars, obsVals):
     factor = factor_tables(marg_net)
     return normalize(factor)
 
-def normalize(factor):
-    Z = sum(factor['probs'])
-    norm_factor = factor[:]
-    for index, rows in norm_factor.iterrows():
-        normalized = norm_factor.loc[index, 'probs'] / Z
-        norm_factor.loc[index, 'probs'] = normalized
-    return norm_factor
-
 def createCPT(varnames, probs, levelsList):
+    """ Constructs a conditional probability table. """
     cpt = pd.DataFrame({'probs': probs})
 
     m = len(probs)
@@ -100,6 +101,69 @@ def createCPT(varnames, probs, levelsList):
         k = k * numLevs
 
     return cpt
+
+def createCPTfromData(data, varnames):
+    """ Contructs a conditional probability table from a dataset with the
+        given varnames.
+    """
+    numVars = len(varnames)
+    levelsList = []
+
+    for i in range(0, numVars):
+        name = varnames[i]
+        levelsList = levelsList + [list(set(data[name]))]
+
+    lengths = list(map(lambda x: len(x), levelsList))
+    m = reduce(lambda x, y: x * y, lengths)
+    n = len(varnames)
+
+    cpt = pd.DataFrame({'probs': np.zeros(m)})
+
+    k = 1
+    for i in range(n - 1, -1, -1):
+        levs = levelsList[i]
+        numLevs = len(levs)
+        col = []
+        for j in range(0, numLevs):
+            col = col + [levs[j]] * k
+        cpt[varnames[i]] = col * int(m / (k * numLevs))
+        k = k * numLevs
+
+    numLevels = len(levelsList[0])
+    skip = int(m / numLevels)
+
+    ## This chunk of code creates the vector "fact" to index into probs using
+    ## matrix multiplication with the data frame x
+    fact = np.zeros(data.shape[1])
+    lastfact = 1
+    for i in range(len(varnames) - 1, -1, -1):
+        fact = np.where(np.isin(list(data), varnames[i]), lastfact, fact)
+        lastfact = lastfact * len(levelsList[i])
+
+    ## Compute unnormalized counts of subjects that satisfy all conditions
+    a = (data - 1).dot(fact) + 1
+    for i in range(0, m):
+        cpt['probs'][i] = sum(a == (i+1))
+
+    # Now normalize the conditional probabilities
+    for i in range(0, skip):
+        denom = 0
+        for j in range(i, m, skip):
+            denom = denom + cpt['probs'][j]
+        for j in range(i, m, skip):
+            if denom != 0:
+                cpt['probs'][j] = cpt['probs'][j] / denom
+
+    return cpt
+
+def normalize(factor):
+    """ Given a single table, returns a normalized version. """
+    Z = sum(factor['probs'])
+    norm_factor = factor[:]
+    for index, rows in norm_factor.iterrows():
+        normalized = norm_factor.loc[index, 'probs'] / Z
+        norm_factor.loc[index, 'probs'] = normalized
+    return norm_factor
 
 def factor_tables(tables):
     """ Takes a list of tables and returns a single factor table. """

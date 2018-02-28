@@ -5,13 +5,14 @@ def main():
     #example_1()
 
     # x -> y -> z
-    #example_2()
+    example_2()
 
     # Bishop book example
-    example_3()
+    #example_3()
 
     # Kevin Murphy example
     #example_4()
+
 
 ###################################
 ## 2016 Example
@@ -47,11 +48,8 @@ def example_2():
     ## Notice in the observe function, you just need to delete rows that are
     ## inconsistent with the given observations. Factors do not need to be combined
     ## or normalized in this step.
-    for table in xyzNet:
-        print('---Before---')
-        print(table)
-        print()
-    xyzNet = observe(xyzNet, 'x', 'T')
+    net = observe(xyzNet, 'x', 'T')
+    exit()
     #observe(xyzNet, ['x', 'y'], ['T', 'T'])
 
     ## Marginalize must first combine all factors involving the variable to
