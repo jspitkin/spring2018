@@ -5,13 +5,13 @@ def main():
     #example_1()
 
     # x -> y -> z
-    example_2()
+    #example_2()
 
     # Bishop book example
     #example_3()
 
     # Kevin Murphy example
-    #example_4()
+    example_4()
 
 
 ###################################
@@ -85,11 +85,17 @@ def example_3():
     #marginalizeFactor(productFactor(marginalizeFactor(productFactor(gbf, b), 'battery'), f), 'fuel')
 
     ## Examples computed in book (see pg. 377)
-    #infer(carNet, ['battery', 'fuel'], ['gauge'], [0])      ## (8.30)
-    #infer(carNet, ['battery'], ['fuel'], [0])           ## (8.31)
-    infer(carNet, ['battery'], ['gauge'], [0])          ## (8.32)
-    A = infer(carNet, [], ['gauge', 'battery'], [0, 0]) ## (8.33)
+    A = infer(carNet, ['battery', 'fuel'], [], [])      ## (8.30)
+    B = infer(carNet, ['battery'], ['fuel'], [0])           ## (8.31)
+    C = infer(carNet, ['battery'], ['gauge'], [0])          ## (8.32)
+    D = infer(carNet, [], ['gauge', 'battery'], [0, 0]) ## (8.33)
     print(A)
+    print('----')
+    print(B)
+    print('----')
+    print(C)
+    print('----')
+    print(D)
 
 ###########################################################################
 ## Kevin Murphy's Example: http://www.cs.ubc.ca/~murphyk/Bayes/bnintro.html
@@ -101,6 +107,9 @@ def example_4():
     wsr = createCPT(['wet', 'sprinkler', 'rain'], [1, 0.1, 0.1, 0.01, 0, 0.9, 0.9, 0.99], [ ['F', 'T'], ['F', 'T'], ['F', 'T'] ])
 
     grassNet = [c, rc, sc, wsr]
+
+    A = infer(grassNet, ['cloudy', 'sprinkler'], ['wet'], ['T'])
+    print(A)
 
 if __name__ == '__main__':
     main()
