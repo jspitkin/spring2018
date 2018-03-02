@@ -42,7 +42,8 @@ def marginalize(bayesNet, margVars):
         and returns the result. This is done using variable elimination.
     """
     marg_net = copy.deepcopy(bayesNet)
-    for var in margVars:
+    ordered_vars = minimum_degree(marg_net, margVars)
+    for var in ordered_vars:
         tables_to_factor = []    
         tables_to_keep = []
         for table in marg_net:
@@ -54,6 +55,27 @@ def marginalize(bayesNet, margVars):
         marg_factor = marginalizeFactor(factor, var)
         marg_net = tables_to_keep + [marg_factor]
     return marg_net
+
+def minimum_degree(bayesNet, variables):
+    """ Takes in a Bayesian network and a collection of variables.
+        Returns the variable that will result in the smallest factor. 
+        Used as a heuristic for variable elimination order in the
+        variable elimination algorithm.
+    """
+    var_counts = {}
+    for var in variables:
+        counted_vars = set()
+        count = 1
+        for table in bayesNet:
+            if var not in table.axes[1][1:]:
+                continue
+            for table_var in table.axes[1][1:]:
+                if table_var not in counted_vars:
+                    count *= len(table[table_var].unique())
+                    counted_vars.add(table_var)
+        var_counts[var] = count
+    return sorted(var_counts, key=lambda k: var_counts[k])
+        
 
 def observe(bayesNet, obsVars, obsVals):
     """ Takes in a bayesNet and and sets the list of variables obsVars

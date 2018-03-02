@@ -1,6 +1,6 @@
 \documentclass[fleqn]{hw}
 
-\usepackage{notes}
+\usepackage{float}
 \usepackage{url}
 \usepackage{graphicx}
 \usepackage{amsmath}
@@ -22,44 +22,50 @@
 
 \section{Life as a Professor}
 
-Bob, our venerable AI professor, is currently riding the currents of
-new-professorhood.  To better understand what his life will be like,
-he has constructed a Markov Process (note: no actions!) to represent the life of a professor.
-He has drawn the life of a professor in the following MP, where rewards are written on the states
-and transition probabilities are written on the arcs.  His start state
-is as an assistant professor.
-
-\begin{centering}
-\includegraphics[width=0.8\textwidth]{academic-life.pdf}  
-\end{centering}
-
 \begin{enumerate}
 
-\item Fill in the following table with the $V^*$ values for each state in
-the MDP for $t = 1 \dots 5$; I have filled in the first three values
-to help you out (hint: use the value iteration Bellman updates, but
-remove the ``$\max_a$'' part because you don't need to select
-actions).  Suppose $\gamma = 0.5$.
+\item Using value iteration we can calculate $V_t^*(state)$ for $t = 1\dots5$ with $\gamma = 0.5$. We will use the following rewards for each state and the recursive value iteration formula:
 
+$$r_{asst} = 20, \quad r_{assc} = 60, \quad r_{full} = 400, \quad r_{hl} = 10, \quad r_{dead} = 0$$
+$$V_s^1 = r_s, \quad V_s^t = r_s + \gamma \sum_{j=1}^n p_{sj} V_j^{t-1}$$
+
+\begin{table}[H]
+\centering	
 \begin{tabular}{|c||c|c|c|c|c|}
 \hline
 {\bf t} & $V_t^*(\text{asst})$ & $V_t^*(\text{assc})$ & $V_t^*(\text{full})$ & $V_t^*(\text{hl})$ & $V_t^*(\text{dead})$ \\
 \hline
 $0$ & $0$ & $0$ & $0$ & $0$ & $0$ \\
 \hline
-$1$ & $20$ & $60$ & $400$ & $\dots$ & $\dots$ \\
+$1$ & $20$ & $60$ & $400$ & $10$ & $0$ \\
 \hline
-$2$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ \\
+$2$ & $33$ & $119$ & $540$ & $13.5$ & $0$ \\
 \hline
-$3$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ \\
+$3$ & $43.15$ & $151.05$ & $589$ & $14.725$ & $0$ \\
 \hline
-$4$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ \\
+$4$ & $49.5225$ & $165.6875$ & $606.15$ & $15.15375$ & $0$ \\
 \hline
-$5$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ \\
+$5$ & $52.940875$ & $171.836625$ & $612.1525$ & $15.3038125$ & $0$ \\
 \hline
 \end{tabular}
+\caption{Five iterations of value iteration on the professor MDP.}
+\end{table}
 
-\item What was the change in max-norm of $V$ between steps $4$ and $5$?  What does this tell us about how close the final values are to the true values?
+\item To compute the max-norm of $V$ between steps 4 and 5, we will consider the change for each state and take the maximum:
+
+$$||U|| = max(V_5(asst) - V_4(asst), V_5(assc) - V_4(assc), V_5(full) - V_4(full), V_5(hl) - V_4(hl), V_5(dead) - V_4(dead))$$
+$$||U|| = max(3.418375, 6.151325, 6.0025, 0.1500625, 0)$$
+$$||U|| = 6.151325$$
+
+So the final values are each at most $6.151325$ away from the true values (as the Bellman update is a contraction so the max-norm will be strictly decreasing with additional iterations of value iteration).
+
+From the text (RN pages 654-655), we know that the Bellman update is a contraction by a factor of $\gamma$ on the space of utility vectors. Let $B$ be the Bellman update, $U_i$ be the utility vector and $U_i^\prime$ be the utility vector at the next step. We can say:
+
+$$||BU_i - B_i^\prime|| \leq \gamma || U_i - U_i^\prime||$$
+
+Simply put, the Bellman update when applied to $U_i$ and $U_i^\prime$ will produce values that are closer together by a factor of $\gamma$. Since $\gamma = 0.5$, the next update will produce a value at most roughly $3$ away from the true value (half of $6.151$ the max-norm). 
+
+So if we are ok with a small error, say being within 1 of the true value, we can expect to be at most three more steps away from convergence.
 
 \end{enumerate}
 
@@ -67,77 +73,17 @@ $5$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ \\
 
 \section{Clarence the Evil Professor}
 
-Alice is also taken another class (class name withheld!) from
-Professor Clarence.  Clarence is known to be evil among the department
-because he only passes students who sweettalk him.  Based on what
-she's learned in AI, Alice has figured out that classes with Clarence
-can be modeled with the following MDP:
-
-\includegraphics[width=0.8\textwidth]{mdp.pdf}
-
-The difference between this Figure and the one from the previous
-question is now Alice has actions she can take.  In any state, she can
-either take action ``S'' (to try to \emph{Sweettalk} Clarence) or action
-``W'' (to \emph{Work} hard).  Her state is represented by a pair: she can
-either be smart or dumb, and she can either pass or fail the course.
-The transitions can be read as follows.  If Alice is \emph{Dumb and Failing},
-and she chooses to \emph{Sweettalk}, then Clarence won't listen to her
-because she's dumb, so with probability $1$ she winds back up in the
-same state.  On the other hand, had she chosen to \emph{Work}, then with
-$50\%$ probability she'd be successful and become \emph{Smart} (but still
-\emph{Failing}) and with $50\%$ probability she'd have studied the wrong
-thing and will remain \emph{Dumb and Failing}.
-
-Please answer the following questions with respect to this MDP; always
-assume $\gamma = 0.5$:
-
 \begin{enumerate}
 
-\item Suppose that Alice's policy is to always work.  Compute the value
-of each state under this policy, running $4$ iterations of value
-iterations.  Does this outcome make sense?
+\item Alice's policy is to always work. This means we can remove the $max$ from the value iteration formula with actions added and just consider the action \textit{work}:
 
-\begin{tabular}{|c||c|c|c|c|}
-\hline
-{\bf t} & D+F & S+F & D+P & S+P \\
-\hline
-$0$ & $0$ & $0$ & $0$  & $0$  \\
-\hline
-$1$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ \\
-\hline
-$2$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ \\
-\hline
-$3$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ \\
-\hline
-$4$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ \\
-\hline
-\end{tabular}
+$$r_{DF} = 0, \quad r_{SF} = 0, \quad r_{DP} = 10, \quad r_{SP} = 10$$
+$$V_s^1 = r_s, \quad V_s^t = r_s + \gamma \sum_{j = 1}^n p_{sj}^{work} V_j^{t-1}$$
 
-\item Suppose that Alice's policy is to work only when she's dumb and sweettalk when she's smart.
-Compute the values here for four steps.  Which policy is better (and
-does this make sense)?
+We will consider this for $t = 0\dots4$ and $\gamma = 0.5$:
 
-
-\begin{tabular}{|c||c|c|c|c|}
-\hline
-{\bf t} & D+F & S+F & D+P & S+P \\
-\hline
-$0$ & $0$ & $0$ & $0$  & $0$  \\
-\hline
-$1$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ \\
-\hline
-$2$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ \\
-\hline
-$3$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ \\
-\hline
-$4$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ \\
-\hline
-\end{tabular}
-
-\item Now, suppose we do not begin with an initial policy but just run
-plain value iteration.  Show the $V$ values derived through value
-iteration for the first four time steps; fill in the table below:
-
+\begin{table}[H]
+\centering
 \begin{tabular}{|c||c|c|c|c|}
 \hline
 {\bf t} & D+F & S+F & D+P & S+P \\
@@ -146,20 +92,130 @@ $0$ & $0$ & $0$ & $0$  & $0$  \\
 \hline
 $1$ & $0$ & $0$ & $10$ & $10$ \\
 \hline
-$2$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ \\
+$2$ & $0$ & $0$ & $10$ & $10$ \\
 \hline
-$3$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ \\
+$3$ & $0$ & $0$ & $10$ & $10$ \\
 \hline
-$4$ & $\dots$ & $\dots$ & $\dots$ & $\dots$ \\
+$4$ & $0$ & $0$ & $10$ & $10$ \\
 \hline
 \end{tabular}
+\caption{Policy: always work.}
+\end{table}
 
-\item Let's do policy iteration!  Suppose that Alice
-begins with the policy from question (1): always work.  You've already
-computed values under this policy.  Use that to estimate a new policy.
-Write that policy down.  Compute four iterations of values for that
-new policy and compute a third policy.  Has the policy converged?
-Does it seem (intuitively) optimal?
+This outcome makes sense. Professor Clarence doesn't value hard work and \textit{work} only leads to \textit{Dumb \& Fail} or \textit{Smart \& Fail}. As such, the most value Alice can obtain is 10 by beginning in the state \textit{Dumb \& Pass} or \textit{Smart \& Pass}.
+
+\item Alice now updates her policy to work when she's dumb and sweet talk when she's smart. Using the same formula as part 1 with this updated policy:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c||c|c|c|c|}
+\hline
+{\bf t} & D+F & S+F & D+P & S+P \\
+\hline
+$0$ & $0$ & $0$ & $0$  & $0$  \\
+\hline
+$1$ & $0$ & $0$ & $10$ & $10$ \\
+\hline
+$2$ & $0$ & $2.5$ & $10$ & $15$ \\
+\hline
+$3$ & $0.625$ & $3.75$ & $10.625$ & $16.25$ \\
+\hline
+$4$ & $1.09375$ & $4.21875$ & $11.09375$ & $16.71875$ \\
+\hline
+\end{tabular}
+\caption{Policy: work when dumb and sweet talk when smart.}
+\end{table}
+
+This policy is better which makes sense as Alice incorporates sweet talking into her policy. Professor Clarence only passes students that sweet talk him. This allows students in any state to have a chance to move into a passing state.
+
+\newpage
+\item Now we will run value iteration without a policy. Calculating the value of $V$ for $t = 1,\dots,5$ and $\gamma = 0.5$ using the value iteration formula for multiple actions:
+
+$$r_{DF} = 0, \quad r_{SF} = 0, \quad r_{DP} = 10, \quad r_{SP} = 10$$
+$$V_s^1 = r_s, \quad V_s^t = \max_l \Big[ r_s + \gamma \sum_{j = 1}^n p_{sj}^l V_j^{t-1}\Big]$$
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c||c|c|c|c|}
+\hline
+{\bf t} & D+F & S+F & D+P & S+P \\
+\hline
+$0$ & $0$ & $0$ & $0$  & $0$  \\
+\hline
+$1$ & $0$ & $0$ & $10$ & $10$ \\
+\hline
+$2$ & $0$ & $2.5$ & $12.5$ & $15$ \\
+\hline
+$3$ & $0.625$ & $3.75$ & $13.125$ & $16.875$ \\
+\hline
+$4$ & $1.09375$ & $4.375$ & $13.4375$ & $17.5$ \\
+\hline
+\end{tabular}
+\caption{Value iteration without an initial policy.}
+\end{table}
+
+\item For a fixed policy $\pi$, which was to always work, values were found for each state:
+$$V^{\pi_i}(D + F) = 0, \quad V^{\pi_i}(S + F) = 0, \quad V^{\pi_i}(D + P) = 10, \quad V^{\pi_i}(S + P) = 10$$
+
+Using these values and the MDP graph, we will use policy extraction to estimate a new policy for each state:
+
+$$\pi_{i+1}(s) = \max_a \Big[R(s, a) + \gamma \sum_{s^\prime} T(s^\prime | s, a)V^{\pi_i}(s^\prime)\Big]$$
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c||c|c|c|c|}
+\hline
+ & D+F & S+F & D+P & S+P \\
+\hline
+{\it sweet talk} & $0$ & $2.5$  & $12.5$  & $15$ \\ \hline
+{\it work} & $0$ & $0$ & $10$ & $10$ \\ \hline
+$\pi_{i+1}(s)$ & {\it work} & {\it sweet talk} & {\it sweet talk} & {\it sweet talk} \\
+\hline
+\end{tabular}
+\caption{Estimated policy using the values from part 1.}
+\end{table}
+
+The new policy for each state is to {\it work} if you are {\it Dumb \& Failing} and {\it sweet talk} otherwise (with an arbitrary choice made for the tie for D + F). We will perform value iteration on this policy with $t = 1,\dots,5$ and $\gamma = 0.5$:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c||c|c|c|c|}
+\hline
+{\bf t} & D+F & S+F & D+P & S+P \\
+\hline
+$1$ & $0$ & $0$ & $10$ & $10$ \\
+\hline
+$2$ & $0$ & $2.5$ & $12.5$ & $15$ \\
+\hline
+$3$ & $0.625$ & $3.75$ & $13.125$ & $16.875$ \\
+\hline
+$4$ & $1.09375$ & $4.375$ & $13.4375$ & $17.5$ \\
+\hline
+$5$ & $1.3671875$ & $4.6484375$ & $13.6328125$ & $17.734375$ \\
+\hline
+\end{tabular}
+\caption{Value iteration with a fixed policy of sweet talking.}
+\end{table}
+
+Using these values, we will perform another round of policy extraction for a final policy:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c||c|c|c|c|}
+\hline
+ & D+F & S+F & D+P & S+P \\
+\hline
+{\it sweet talk} & $0$ & $4.375$  & $13.3203125$  & $17.6953125$ \\ \hline
+{\it work} & $1.0546875$ & $2.109375$ & $11.0546875$ & $12.109375$ \\ \hline
+$\pi_{i+1}(s)$ & {\it work} & {\it sweet talk} & {\it sweet talk} & {\it sweet talk} \\
+\hline
+\end{tabular}
+\caption{Third policy.}
+\end{table}
+
+The policy has converged as it hasn't changed since the last step of policy extraction. 
+
+This policy seems intuitively optimal to me. When in the state D+F, the only way to leave is to {\it work}. In the other states, {\it sweet talking} has a better chance of putting you in a passing state and {\it working} has a better of putting you in a failing state.
 
 \end{enumerate}
 

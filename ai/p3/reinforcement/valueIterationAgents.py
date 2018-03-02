@@ -44,7 +44,14 @@ class ValueIterationAgent(ValueEstimationAgent):
         self.values = util.Counter() # A Counter is a dict with default 0
 
         # Write value iteration code here
-        "*** YOUR CODE HERE ***"
+        for _ in range(100):
+            for state in mdp.getStates():
+                max_action_value = float("-inf")
+                for action in mdp.getPossibleActions(state):
+                    trans_probs = mdp.getTransitionStatesAndProbs(state, action)
+                    for next_state in mdp.getStates():
+                        reward = mdp.getReward(state, action, next_state)
+
 
 
     def getValue(self, state):
