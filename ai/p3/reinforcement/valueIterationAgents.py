@@ -36,9 +36,7 @@ class ValueIterationAgent(ValueEstimationAgent):
         self.iterations = iterations
         self.values = util.Counter()
 
-        # V(s) = max_a r(s, a) + discount * sum(V(s') * T(s'|a,s))
         for i in range(iterations):
-            # Store a copy of previous values to use in computing new values
             prime_values = self.values.copy()
             for s in mdp.getStates():
                 # Iteration 1 - value is the state's reward
@@ -50,7 +48,6 @@ class ValueIterationAgent(ValueEstimationAgent):
                 values = []
                 for a in mdp.getPossibleActions(s):
                     tran_states = mdp.getTransitionStatesAndProbs(s, a)
-                    # sum(V(s') * T(s'|a, s))
                     exp_value = sum(prime_values[s_prime] * prob for s_prime,prob in tran_states)
                     value = mdp.getReward(s, a, None) + self.discount * exp_value
                     values.append(value)
@@ -70,7 +67,6 @@ class ValueIterationAgent(ValueEstimationAgent):
         """
         reward = self.mdp.getReward(state, action, None)
         tran_states = self.mdp.getTransitionStatesAndProbs(state, action)
-        # sum(T(s, a, s') * (R(s, a, s') + discount * V(s')))
         return sum(prob * (reward + self.discount * self.values[s_prime]) \
                    for s_prime,prob in tran_states)
 
