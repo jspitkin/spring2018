@@ -30,29 +30,31 @@ class ValueIterationAgent(ValueEstimationAgent):
           Your value iteration agent should take an mdp on
           construction, run the indicated number of iterations
           and then act according to the resulting policy.
-
-          Some useful mdp methods you will use:
-              mdp.getStates()
-              mdp.getPossibleActions(state)
-              mdp.getTransitionStatesAndProbs(state, action)
-              mdp.getReward(state, action, nextState)
-              mdp.isTerminal(state)
         """
         self.mdp = mdp
         self.discount = discount
         self.iterations = iterations
-        self.values = util.Counter() # A Counter is a dict with default 0
+        self.values = util.Counter()
 
-        # Write value iteration code here
-        for _ in range(100):
-            for state in mdp.getStates():
-                max_action_value = float("-inf")
-                for action in mdp.getPossibleActions(state):
-                    trans_probs = mdp.getTransitionStatesAndProbs(state, action)
-                    for next_state in mdp.getStates():
-                        reward = mdp.getReward(state, action, next_state)
-
-
+        # V(s) = max_a r(s, a) + discount * sum(V(s') * T(s'|a,s))
+        for i in range(iterations):
+            # Store a copy of previous values to use in computing new values
+            prime_values = self.values.copy()
+            for s in mdp.getStates():
+                # Iteration 1 - value is the state's reward
+                # If a state is a terminal state its value is its reward
+                if i == 0 or mdp.isTerminal(s):
+                    self.values[s] = mdp.getReward(s, None, None)
+                    continue
+                # Consider each action to find max expected value
+                values = []
+                for a in mdp.getPossibleActions(s):
+                    tran_states = mdp.getTransitionStatesAndProbs(s, a)
+                    # sum(V(s') * T(s'|a, s))
+                    exp_value = sum(prime_values[s_prime] * prob for s_prime,prob in tran_states)
+                    value = mdp.getReward(s, a, None) + self.discount * exp_value
+                    values.append(value)
+                self.values[s] = max(values)
 
     def getValue(self, state):
         """
@@ -66,8 +68,11 @@ class ValueIterationAgent(ValueEstimationAgent):
           Compute the Q-value of action in state from the
           value function stored in self.values.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        reward = self.mdp.getReward(state, action, None)
+        tran_states = self.mdp.getTransitionStatesAndProbs(state, action)
+        # sum(T(s, a, s') * (R(s, a, s') + discount * V(s')))
+        return sum(prob * (reward + self.discount * self.values[s_prime]) \
+                   for s_prime,prob in tran_states)
 
     def computeActionFromValues(self, state):
         """
@@ -78,8 +83,11 @@ class ValueIterationAgent(ValueEstimationAgent):
           there are no legal actions, which is the case at the
           terminal state, you should return None.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        if self.mdp.isTerminal(state):
+            return None
+        actions = self.mdp.getPossibleActions(state)
+        q_values = list(map(lambda a: (a, self.computeQValueFromValues(state, a)), actions))
+        return max(q_values, key=lambda x: x[1])[0]
 
     def getPolicy(self, state):
         return self.computeActionFromValues(state)
