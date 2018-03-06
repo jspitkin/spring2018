@@ -51,31 +51,13 @@ def marginalize(bayesNet, margVars):
                 tables_to_factor.append(table)
             else:
                 tables_to_keep.append(table)
-        factor = factor_tables(tables_to_factor)
-        marg_factor = marginalizeFactor(factor, var)
-        marg_net = tables_to_keep + [marg_factor]
+        if len(tables_to_factor) != 0:
+            factor = factor_tables(tables_to_factor)
+            marg_factor = marginalizeFactor(factor, var)
+            marg_net = tables_to_keep + [marg_factor]
+        else:
+            marg_net = tables_to_keep
     return marg_net
-
-def minimum_degree(bayesNet, variables):
-    """ Takes in a Bayesian network and a collection of variables.
-        Returns the variable that will result in the smallest factor. 
-        Used as a heuristic for variable elimination order in the
-        variable elimination algorithm.
-    """
-    var_counts = {}
-    for var in variables:
-        counted_vars = set()
-        count = 1
-        for table in bayesNet:
-            if var not in table.axes[1][1:]:
-                continue
-            for table_var in table.axes[1][1:]:
-                if table_var not in counted_vars:
-                    count *= len(table[table_var].unique())
-                    counted_vars.add(table_var)
-        var_counts[var] = count
-    return sorted(var_counts, key=lambda k: var_counts[k])
-        
 
 def observe(bayesNet, obsVars, obsVals):
     """ Takes in a bayesNet and and sets the list of variables obsVars
@@ -106,7 +88,9 @@ def infer(bayesNet, margVars, obsVars, obsVals):
     return normalize(factor)
 
 def createCPT(varnames, probs, levelsList):
-    """ Constructs a conditional probability table. """
+    """ Constructs a conditional probability table.
+        Written by Tom Fletcher. 
+    """
     cpt = pd.DataFrame({'probs': probs})
 
     m = len(probs)
@@ -125,8 +109,8 @@ def createCPT(varnames, probs, levelsList):
     return cpt
 
 def createCPTfromData(data, varnames):
-    """ Contructs a conditional probability table from a dataset with the
-        given varnames.
+    """ Originally written by Tom Fletcher. 
+        With some optimizations by Maks Cegielski-Johnson.
     """
     numVars = len(varnames)
     levelsList = []
@@ -155,7 +139,7 @@ def createCPTfromData(data, varnames):
     skip = int(m / numLevels)
 
     ## This chunk of code creates the vector "fact" to index into probs using
-    ## matrix multiplication with the data frame x
+    ## matrix multiplication with the data frame data
     fact = np.zeros(data.shape[1])
     lastfact = 1
     for i in range(len(varnames) - 1, -1, -1):
@@ -164,8 +148,12 @@ def createCPTfromData(data, varnames):
 
     ## Compute unnormalized counts of subjects that satisfy all conditions
     a = (data - 1).dot(fact) + 1
+    temp_counter = dict((person,0) for person in range(1,m+1))
+    for ap in a:
+        temp_counter[ap] += 1
     for i in range(0, m):
-        cpt['probs'][i] = sum(a == (i+1))
+        cpt.set_value(i,"probs", temp_counter[i+1])
+
 
     # Now normalize the conditional probabilities
     for i in range(0, skip):
@@ -174,7 +162,7 @@ def createCPTfromData(data, varnames):
             denom = denom + cpt['probs'][j]
         for j in range(i, m, skip):
             if denom != 0:
-                cpt['probs'][j] = cpt['probs'][j] / denom
+                cpt.set_value(j, "probs",cpt['probs'][j] / denom)
 
     return cpt
 
@@ -254,3 +242,23 @@ def reshape(A, B):
             rel_values.append(C.loc[index, var])
         C.loc[index, 'probs'] = get_prob(A, A_vars, rel_values)
     return C
+
+def minimum_degree(bayesNet, variables):
+    """ Takes in a Bayesian network and a collection of variables.
+        Returns the variable that will result in the smallest factor. 
+        Used as a heuristic for variable elimination order in the
+        variable elimination algorithm.
+    """
+    var_counts = {}
+    for var in variables:
+        counted_vars = set()
+        count = 1
+        for table in bayesNet:
+            if var not in table.axes[1][1:]:
+                continue
+            for table_var in table.axes[1][1:]:
+                if table_var not in counted_vars:
+                    count *= len(table[table_var].unique())
+                    counted_vars.add(table_var)
+        var_counts[var] = count
+    return sorted(var_counts, key=lambda k: var_counts[k])
