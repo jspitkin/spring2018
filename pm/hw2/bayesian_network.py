@@ -56,7 +56,7 @@ def marginalize(bayesNet, margVars):
             marg_factor = marginalizeFactor(factor, var)
             marg_net = tables_to_keep + [marg_factor]
         else:
-            marg_net = tables_to_keep
+            marg_net = tables_to_keep 
     return marg_net
 
 def observe(bayesNet, obsVars, obsVals):

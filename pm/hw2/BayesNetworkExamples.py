@@ -54,11 +54,14 @@ marginalizeFactor(productFactor(marginalizeFactor(productFactor(gbf, b), 'batter
 marginalizeFactor(productFactor(marginalizeFactor(productFactor(gbf, b), 'battery'), f), 'fuel')
 
 ## Examples computed in book (see pg. 377)
-print(infer(carNet, ['battery', 'fuel'], [], []))     ## (8.30)
-print(infer(carNet, ['battery'], 'fuel', 0))           ## (8.31)
-print(infer(carNet, ['battery'], ['gauge'], [0]))         ## (8.32)
-print(infer(carNet, [], ['gauge', 'battery'], [0, 0])) ## (8.33)
-
+A = infer(carNet, ['battery', 'fuel'], [], [])      ## (8.30)
+print("Expected: {} Actual: {}".format(0.315, A.iloc[1]['probs']))
+B = infer(carNet, ['battery'], ['fuel'], [0])           ## (8.31)
+print("Expected: {} Actual: {}".format(0.81, B.iloc[1]['probs']))
+C = infer(carNet, ['battery'], ['gauge'], [0])          ## (8.32)
+print("Expected: {} Actual: {}".format(0.257, C.iloc[1]['probs']))
+D = infer(carNet, [], ['gauge', 'battery'], [0, 0]) ## (8.33)
+print("Expected: {} Actual: {}".format(0.111, D.iloc[1]['probs']))
 
 ###########################################################################
 ## Kevin Murphy's Example: http://www.cs.ubc.ca/~murphyk/Bayes/bnintro.html
