@@ -1,6 +1,6 @@
 /* author: jake pitkin
  * last edit: april 2 2018
- * assignment 4 - problem 2
+ * assignment 4 - problem 4
  * cs5460 - operating systems
  */
 
@@ -11,25 +11,23 @@
 #include <unistd.h>
 #include <sched.h>
 
-typedef struct __args_t {
-    int tid;
-} args_t;
-
 typedef struct __ret_t {
     int cs_count;
 } ret_t;
 
-volatile int *entering;
-volatile int *number;
+typedef struct __spin_lock_t {
+    volatile int held;
+} spin_lock_t;
+
 volatile int in_cs;
+volatile spin_lock_t *lock;
 long thread_count;
 long seconds;
 int run_threads;
 
-void lock(int i);
-void unlock(int i);
-void *routine(void *arg);
-int max(int arr[], size_t size);
+void spin_lock(volatile spin_lock_t *s);
+void spin_unlock(volatile spin_lock_t *s);
+void *routine();
 
 int main(int argc, char *argv[]) {
     // Validate input
@@ -49,35 +47,22 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    // Allocate global variables
-    entering = (int*) malloc(thread_count*sizeof(int));
-    number = (int*) malloc(thread_count*sizeof(int));
-    if (entering == NULL || number == NULL) {
-	fprintf(stderr, "Error allocating memory.\n"); 
-	return -1;
-    }
-
     // Allocate threads
-    args_t *tids = (args_t*) malloc(thread_count*sizeof(args_t));
     pthread_t *threads = (pthread_t*) malloc(thread_count*sizeof(pthread_t));
-    if (tids == NULL || threads == NULL) {
+    lock = (spin_lock_t*) malloc(sizeof(spin_lock_t));
+    if (threads == NULL) {
 	fprintf(stderr, "Error allocating memory.\n"); 
 	return -1;
     }
 
-
-    // Initialize
-    int i;
-    for (i = 0; i < thread_count; i++) {
-	entering[0] = 0;
-	number[0] = 0;
-	tids[i].tid = i;
-    }
+    // Initialize lock
+    lock->held = 0;
 
     // Create threads
     int thread_ret;
+    int i;
     for (i = 0; i < thread_count; i++) {
-    	thread_ret = pthread_create(&threads[i], NULL, routine, (void*) &tids[i]);
+    	thread_ret = pthread_create(&threads[i], NULL, routine, NULL);
 	if (thread_ret != 0) {
 	    fprintf(stderr, "Error creating thread.\n");
 	    return -1;
@@ -105,59 +90,22 @@ int main(int argc, char *argv[]) {
     }
 
     // Free memory
-    free((int*) entering);
-    free((int*) number);
-    free(tids);
     free(threads);
+    free((spin_lock_t*)lock);
 
     return 0;
 }
 
-/* Locking mechanism for Lamport's bakery algorithm. */
-void lock(int i) {
-    entering[i] = 1;
-    number[i] = 1 + max((int*)number, thread_count);
-    entering[i] = 0;
-    int j;
-    int ret;
-    for (j = 0; j < thread_count; j++) {
-	// Wait until thread j receives its number
-	while (entering[j]) {
-	    ret = sched_yield();
-	    if (ret != 0) {
-		fprintf(stderr, "Error yielding processor.\n");
-	    }
-	 }
-	// Wait until all threads with smaller numbers or with the same
-	// number, but with high priority, finish their work
-	while ((number[j] != 0) && ((number[j] < number[i]) || ((number[j] == number[i]) && (j < i)))) {
-	    ret = sched_yield();
-	    if (ret != 0) {
-		fprintf(stderr, "Error yielding processor.\n");
-	    }
-	}
-    }
-    return;
-}
-
-/* Unlocking mechanism for Lamport's bakery algorithm. */
-void unlock(int i) {
-    number[i] = 0;
-}
-
 /* A routine that spins until run_threads is false. 
  * checks  mutual exclusion amoung all the threads that call it. */
-void *routine(void *arg) {
-    args_t *a = (args_t*) arg;
-    int i = a->tid;
+void *routine() {
     ret_t *ret = malloc(sizeof(ret_t));
     if (ret == NULL) {
 	fprintf(stderr, "Error allocating memory.\n"); 
     }
     ret->cs_count = 0;
     while (run_threads) {
-	lock(i);
-	ret->cs_count++;
+	spin_lock(lock);
 	assert(in_cs == 0);
 	in_cs++;
 	assert(in_cs == 1);
@@ -166,21 +114,39 @@ void *routine(void *arg) {
 	in_cs++;
 	assert(in_cs == 3);
 	in_cs = 0;
-	unlock(i);
+	spin_unlock(lock);
+	ret->cs_count++;
     }
     return ret;
 }
 
-/* Returns the largest integer in an array.
-   If the array is empty then -EINVAL is returned. */
-int max(int arr[], size_t size) {
-    if (size == 0)
-	return -1;
-    int max = arr[0];
-    unsigned int i;
-    for (i = 1; i < size; i++) {
-	if (arr[i] > max)
-	    max = arr[i];
-    }
-    return max;
+/*
+ * atomic_cmpxchg
+ *  
+ * equivalent to atomic execution of this code:
+ *
+ * if (*ptr == old) {
+ *   *ptr = new;
+ *   return old;
+ * } else {
+ *   return *ptr;
+ * }
+ *
+ */
+static inline int atomic_cmpxchg (volatile int *ptr, int old, int new)
+{
+  int ret;
+  asm volatile ("lock cmpxchgl %2,%1"
+    : "=a" (ret), "+m" (*ptr)     
+    : "r" (new), "0" (old)      
+    : "memory");         
+  return ret;                            
+}
+
+void spin_lock(volatile spin_lock_t *s) {
+    while(atomic_cmpxchg(&(s->held), 0, 1)) {}
+}
+
+void spin_unlock(volatile spin_lock_t *s) {
+    s->held= 0;
 }
