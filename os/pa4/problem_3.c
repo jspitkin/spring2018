@@ -9,7 +9,6 @@
 #include <pthread.h>
 #include <assert.h>
 #include <unistd.h>
-#include <sched.h>
 
 typedef struct __args_t {
     int tid;

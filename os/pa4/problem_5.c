@@ -16,7 +16,8 @@ typedef struct __ret_t {
 } ret_t;
 
 typedef struct __spin_lock_t {
-    volatile int held;
+    volatile int counter;
+    volatile int turn;
 } spin_lock_t;
 
 volatile int in_cs;
@@ -56,7 +57,8 @@ int main(int argc, char *argv[]) {
     }
 
     // Initialize lock
-    lock->held = 0;
+    lock->counter = 0;
+    lock->turn = 0;
 
     // Create threads
     int thread_ret;
@@ -143,10 +145,37 @@ static inline int atomic_cmpxchg (volatile int *ptr, int old, int new)
   return ret;                            
 }
 
+/*
+ * atomic_xadd
+ *
+ * equivalent to atomic execution of this code:
+ *
+ * return (*ptr)++;
+ *
+ */
+static inline int atomic_xadd (volatile int *ptr)
+{
+  register int val __asm__("eax") = 1;
+  asm volatile ("lock xaddl %0,%1"
+    : "+r" (val)
+    : "m" (*ptr)
+    : "memory");  
+  return val;
+}
+
 void spin_lock(volatile spin_lock_t *s) {
-    while(atomic_cmpxchg(&(s->held), 0, 1)) {}
+    int me;
+    int ret;
+    me = atomic_xadd(&(s->counter));
+    while (me != s->turn) {
+	ret = sched_yield();
+	if (ret != 0) {
+	    fprintf(stderr, "Error yielding processor.\n");
+	}
+    }
+
 }
 
 void spin_unlock(volatile spin_lock_t *s) {
-    s->held= 0;
+    s->turn++;
 }
