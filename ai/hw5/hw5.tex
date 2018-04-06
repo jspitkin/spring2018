@@ -67,7 +67,6 @@ F & $1/4$ \\
 \end{tabular}
 \caption{$P(B)$}
         \end{minipage}
-        \hfillx
         \begin{minipage}{0.3333\textwidth}
             \centering
       \begin{tabular}{|cc|c|}
@@ -111,29 +110,78 @@ Please answer the following conditional independence questions from
 this model:
 
 \begin{enumerate}
-\item $A \indep H$
-\item $A \indep H | C$
-\item $A \indep H | C,F$
-\item $E \indep B | A$
-\item $E \indep B | C,F$
-\item $E \indep B | A,C,F$
+\item $A \indep H$ - {\bf No}: There is an active path between $A$ and $H$ by causal chain.
+\item $A \indep H | C$ - {\bf No}: There is an active path between $A$ and $H$ by causal chain.
+\item $A \indep H | C,F$ - {\bf Yes}: There is no active path between $A$ and $H$.
+\item $E \indep B | A$ - {\bf Yes}: There is no active path between $E$ and $B$.
+\item $E \indep B | C,F$ - {\bf No}: There is an active path between $E$ and $B$ by common cause. 
+\item $E \indep B | A,C,F$ - {\bf No}: There is an active path between $E$ and $B$ by common cause.
 \end{enumerate}
 
 \newpage
 \section{Inference by Enumeration and Variable Elimination}
 
-Consider the graphical model for the alarm network.  Using inference by enumeration, compute the
-following probabilities (show your work!!!):
+The following queries are answered using the probability tables found in the lecture slides.
 
 \begin{enumerate}
 \item $p(b, \lnot e | a, j, m)$
+
+\begin{align*}
+p(b, \lnot e | a, j, m) &= \frac{p(b, \lnot e, a, j, m)}{p(a, j, m)} \\ \\
+&= \frac{p(b) \ p(\lnot e) \ p(j | a) \ p(m | a) \ p(a | b, \lnot e)}{p(j | a) \ p(m | a) \ \sum_{b} \sum_{e} p(B) \ p(E) \ p(a | B, E)} \\ \\
+&= \frac{0.001 * 0.998 * 0.9 * 0.7 * 0.94}{0.9 * 0.7 * (0.001 * 0.002 * 0.95 + 0.999 * 0.002 * 0.29 \ + } \\
+&\qquad\qquad\qquad \ 0.001 * 0.998 * 0.94 + 0.999 * 0.998 * 0.001) \\ \\
+&= \frac{0.0005910156}{0.00158535846} \\ \\
+&= {\bf 0.372796}
+\end{align*}
+
 \item $p(b | a)$
+
+\begin{align*}
+p(b|a) &= \frac{\sum_{e} \sum_{j} \sum_{m} p(b) \ p(E) \ p(a | b, E) \ p(J | a) \ p(M | a)}{\sum_{b} \sum_{e} \sum_{j} \sum_{m} p(E) \ p(E) \ p(a | B, E) p(J | a) \ p(J | a)} \\ \\
+&= \frac{p(b) \sum_{e} p(E) \ p(a | b, E)}{\sum_{b} \sum_{e} p(B) \ p(E) \ p(a|B, E)} \\ \\
+&= \frac{0.001 * (0.002 * 0.95 + 0.998 * 0.94)}{0.001 * 0.002 * 0.95 + 0.999 * 0.002 * 0.29 + 0.001 * 0.998 * 0.94 + 0.999 * 0.998 * 0.001} \\ \\
+&= \frac{0.00094002}{0.002516442} \\ \\
+&= {\bf 0.3735512}
+\end{align*}
+
+\newpage
 \item $p(b | e,a)$  (how does this compare to the previous one?)
+
+\begin{align*}
+p(b | e, a) & = \frac{\sum_{j} \sum_{m} p(b) \ p(e) \ p(a | b, e) \ p(J | a) \ p(M | a)}{\sum_{b} \sum_{j} \sum_{m} p(B) \ p(e) \ p(a | B, e) p(J | a) \ p(M | a)} \\ \\ 
+&= 	\frac{p(b) \ p(e) \ p(a | b, e)}{p(e) \sum_{b} p(B) \ p(a|B, e)} \\ \\
+&= \frac{0.001 * 0.002 * 0.95}{0.002 * (0.001 * 0.95 + 0.999 * 0.29)} \\ \\
+&= \frac{0.0000019}{0.00058132} \\ \\ 
+&= {\bf 0.0032684}
+\end{align*}
+
+This makes sense. If there is an earthquake and the alarm is going off, it's unlikely that there is a burglary occurring at the same moment. But in question 2, we know only the alarm is going off and there is a much larger chance there is a burglary occurring (causing the alarm to go off).
+
 \item $p(a | j,\lnot m)$
+
+Note: in the numerator I take the result of marginalizing {\it b} and {\it e} when {\it a} is true from question 1 rather than showing the work again. For denominator I solved it using Excel.
+
+\begin{align*}
+p(a | j, \lnot m) & = \frac{p(j | a) \ p(\lnot m | a) \ \sum_{b} \sum_{e} p(B) \ p(E) \ p(a | B, E)}{\sum_{b} \sum_{e} \sum_{a} p(B) \ p(E) \ p(A | B, E) p(j | A) \ p(\lnot m | A)} \\ \\ 
+&= \frac{0.9 * 0.01 * 0.002516442}{\sum_{b} \sum_{e} p(B) \ p(E) \ f(B, E, j, \lnot m)}
+\end{align*}
+
+\begin{align*}
+\qquad \qquad \quad &= \frac{0.000226479}{0.0500548} \\ \\
+&= {\bf 0.0045246}
+\end{align*}
+
+
 \end{enumerate}
 
 Now, repeat items (2) and (4) using variable elimination.  When you
 have to choose a variable to eliminate, choose alphabetically.
+
+\begin{enumerate}
+\item[2.] $p(b | a)$
+\item[4.] $p(a|j, \lnot m)$	
+\end{enumerate}
 
 
 \end{document}

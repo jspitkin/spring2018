@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.5.22)  4 APR 2018 13:51
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.5.22)  5 APR 2018 18:29
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -288,17 +288,8 @@ Overfull \hbox (0.60435pt too wide) in paragraph at lines 55--56
 []\OT1/cmr/m/n/10 This fac-tor-izes the joint prob-a-bil-ity $\OML/cmm/m/it/10 P\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 A; B; C\OT1/cmr/m/n/10 )$ as a prod-uct of the con-di-tional prob-a-bil-i-ties $\OML/cmm/m/it/10 P\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 B\OT1/cmr/m/n/10 )$, $\OML/cmm/m/it/10 P\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 C\OMS/cmsy/m/n/10 j\OML/cmm/m/it/10 B\OT1/cmr/m/n/10 )$, 
  []
 
-./hw5.tex:70: Undefined control sequence.
-l.70         \hfillx
-                    
-The control sequence at the end of the top line
-of your error message was never \def'ed. If you have
-misspelled it (e.g., `\hobx'), type `I' and the correct
-spelling (e.g., `I\hbox'). Otherwise just continue,
-and I'll forget about whatever was undefined.
 
-
-Overfull \hbox (6.3281pt too wide) in paragraph at lines 58--99
+Overfull \hbox (6.3281pt too wide) in paragraph at lines 58--98
 []$[]$ $[]$ $[]$ 
  []
 
@@ -307,22 +298,22 @@ Overfull \hbox (6.3281pt too wide) in paragraph at lines 58--99
 {/usr/local/texlive/2016/texmf-var/fonts/map/pdftex/updmap/pdftex.map} <./p1.png>] <example-network.pdf, id=14, 505.89pt x 216.81pt>
 File: example-network.pdf Graphic file (type pdf)
  <use example-network.pdf>
-Package pdftex.def Info: example-network.pdf used on input line 108.
+Package pdftex.def Info: example-network.pdf used on input line 107.
 (pdftex.def)             Requested size: 236.01555pt x 101.14973pt.
- [2 <./example-network.pdf>] [3] (/Users/jsp/spring_2018/ai/hw5/.texpadtmp/hw5.aux) ) 
+ [2 <./example-network.pdf>] [3] [4] (/Users/jsp/spring_2018/ai/hw5/.texpadtmp/hw5.aux) ) 
 Here is how much of TeX's memory you used:
- 3677 strings out of 493014
- 51980 string characters out of 6133351
+ 3683 strings out of 493014
+ 52039 string characters out of 6133351
  120966 words of memory out of 5000000
- 7173 multiletter control sequences out of 15000+600000
- 5007 words of font info for 19 fonts, out of 8000000 for 9000
+ 7176 multiletter control sequences out of 15000+600000
+ 5972 words of font info for 22 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 38i,10n,34p,261b,246s stack positions out of 5000i,500n,10000p,200000b,80000s
-</usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
-Output written on /Users/jsp/spring_2018/ai/hw5/.texpadtmp/hw5.pdf (3 pages, 111126 bytes).
+ 38i,10n,34p,300b,246s stack positions out of 5000i,500n,10000p,200000b,80000s
+</usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb>
+Output written on /Users/jsp/spring_2018/ai/hw5/.texpadtmp/hw5.pdf (4 pages, 141413 bytes).
 PDF statistics:
- 49 PDF objects out of 1000 (max. 8388607)
- 33 compressed objects within 1 object stream
+ 64 PDF objects out of 1000 (max. 8388607)
+ 44 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  11 words of extra memory for PDF output out of 10000 (max. 10000000)
 
