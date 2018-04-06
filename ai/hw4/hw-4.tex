@@ -51,7 +51,7 @@ following sequences of (state, action, reward) tuples:
 \begin{tabular}{c|c|c}
     {\bf State} & {\bf Calculation} & {\bf Value} \\
 \hline
-    (1,1) & (93 + 95 + 94)/3 & 93.666 \\
+    (1,1) & (93 + 95 + 94)/3 & 94 \\
     (1,2) & (96 + 95)/2&95.5 \\
     (1,3) & (97 + 96)/2&96.5 \\
     (2,1) & 94/1&94 \\
@@ -62,7 +62,7 @@ following sequences of (state, action, reward) tuples:
     (3,3) & (99 + 99)/2&99 \\
     (4,1) & -&- \\
     (4,2) & -&- \\
-    (4,3) & (100 + 100/2&100 \\
+    (4,3) & (100 + 100)/2&100 \\
 \end{tabular}
 \end{center}
 
@@ -118,10 +118,19 @@ policy, we have:
           {\sum_{a'} \exp \left( \sum_{i=1}^n \theta_i f_i(s,a') \right)}
 \end{equation}
 
-Compute a closed form solution for $g(s_0,a)$.  Explain in a few
+{\bf Compute a closed form solution for $g(s_0,a)$.} 
+
+We are given that:
+
+$$g(s_0, a) = \nabla_\theta = log\bigg[\frac {\exp \left( \sum_{i=1}^n \theta_i f_i(s,a) \right)}
+          {\sum_{a'} \exp \left( \sum_{i=1}^n \theta_i f_i(s,a') \right)}
+\bigg]$$
+
+
+{\bf Explain in a few
 sentences \emph{why} this leads to a sensible update for gradience
 ascent (i.e., if we plug this in to Eq~\eqref{eq:grad} and do gradient
-ascent, why is the derived form reasonable)?
+ascent, why is the derived form reasonable)?}
 
 \end{document}
 
