@@ -101,7 +101,7 @@ int main(int argc, char *argv[]) {
 		fprintf(stderr, "Error joining thread.\n");
 		return -1;
 	}
-	fprintf(stderr, "Thread %d entered the critical section %d times.\n", i, ret->cs_count);
+	printf("Thread %d entered the critical section %d times.\n", i, ret->cs_count);
     }
 
     // Free memory

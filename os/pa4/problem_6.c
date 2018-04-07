@@ -11,23 +11,14 @@
 #include <unistd.h>
 #include <sched.h>
 
-typedef struct __ret_t {
-    int cs_count;
-} ret_t;
-
-typedef struct __spin_lock_t {
-    volatile int counter;
-    volatile int turn;
-} spin_lock_t;
-
-volatile int in_cs;
-volatile spin_lock_t *lock;
+pthread_mutex_t *lock;
 long thread_count;
 long seconds;
 int run_threads;
 
-void spin_lock(volatile spin_lock_t *s);
-void spin_unlock(volatile spin_lock_t *s);
+volatile unsigned long samples;
+volatile unsigned long inside_count;
+
 void *routine();
 
 int main(int argc, char *argv[]) {
@@ -50,15 +41,16 @@ int main(int argc, char *argv[]) {
 
     // Allocate threads and lock
     pthread_t *threads = (pthread_t*) malloc(thread_count*sizeof(pthread_t));
-    lock = (spin_lock_t*) malloc(sizeof(spin_lock_t));
+    lock = (pthread_mutex_t*) malloc(sizeof(pthread_mutex_t));
     if (threads == NULL || lock == NULL) {
 	fprintf(stderr, "Error allocating memory.\n"); 
 	return -1;
     }
 
-    // Initialize lock
-    lock->counter = 0;
-    lock->turn = 0;
+    samples = 0;
+    inside_count = 0;
+    srand(time(NULL));
+
 
     // Create threads
     int thread_ret;
@@ -81,78 +73,42 @@ int main(int argc, char *argv[]) {
     run_threads = 0;
 
     // Wait for all the threads to complete
-    ret_t *ret;
     for (i = 0; i < thread_count; i++) {
-	thread_ret = pthread_join(threads[i], (void **) &ret);
+	thread_ret = pthread_join(threads[i], NULL);
 	if (thread_ret != 0) {
 		fprintf(stderr, "Error joining thread.\n");
 		return -1;
 	}
-	printf("Thread %d entered the critical section %d times.\n", i, ret->cs_count);
     }
+
+    float pi = (4 * inside_count)/(float)samples;
+    printf("The estimated value of pi is: %f\n", pi);
 
     // Free memory
     free(threads);
-    free((spin_lock_t*)lock);
+    free((pthread_mutex_t*)lock);
 
     return 0;
 }
 
-/* A routine that spins until run_threads is false. 
- * checks  mutual exclusion amoung all the threads that call it. */
+/* Generates random points inside a 2x2 square.
+ * Add to 'samples' the number of samples generated and
+ * adds to 'inside_count' the number of points that land
+ * inside a unit circle inside the square. Locks are
+ * used to protect the global counts. */
 void *routine() {
-    ret_t *ret = malloc(sizeof(ret_t));
-    if (ret == NULL) {
-	fprintf(stderr, "Error allocating memory.\n"); 
-    }
-    ret->cs_count = 0;
+    float x;
+    float y;
     while (run_threads) {
-	spin_lock(lock);
-	assert(in_cs == 0);
-	in_cs++;
-	assert(in_cs == 1);
-	in_cs++;
-	assert(in_cs == 2);
-	in_cs++;
-	assert(in_cs == 3);
-	in_cs = 0;
-	spin_unlock(lock);
-	ret->cs_count++;
+	// Random (x, y) point in the range [-1, 1]
+	// With help from stackoverflow
+	x = ((float)rand()/(float)(RAND_MAX)) * 2 - 1;
+	y = ((float)rand()/(float)(RAND_MAX)) * 2 - 1;
+	pthread_mutex_lock(lock);
+	if ((x*x + y*y) < 1)
+	    inside_count++;
+	samples++;
+	pthread_mutex_unlock(lock);
     }
-    return ret;
-}
-
-/*
- * atomic_xadd
- *
- * equivalent to atomic execution of this code:
- *
- * return (*ptr)++;
- *
- */
-static inline int atomic_xadd (volatile int *ptr)
-{
-  register int val __asm__("eax") = 1;
-  asm volatile ("lock xaddl %0,%1"
-    : "+r" (val)
-    : "m" (*ptr)
-    : "memory");  
-  return val;
-}
-
-void spin_lock(volatile spin_lock_t *s) {
-    int me;
-    int ret;
-    me = atomic_xadd(&(s->counter));
-    while (me != s->turn) {
-	ret = sched_yield();
-	if (ret != 0) {
-	    fprintf(stderr, "Error yielding processor.\n");
-	}
-    }
-
-}
-
-void spin_unlock(volatile spin_lock_t *s) {
-    s->turn++;
+    return NULL;
 }
