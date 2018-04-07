@@ -24,7 +24,7 @@ volatile int *number;
 volatile int in_cs;
 long thread_count;
 long seconds;
-int run_threads;
+volatile int run_threads;
 
 void lock(int i);
 void unlock(int i);
@@ -40,11 +40,11 @@ int main(int argc, char *argv[]) {
     thread_count = strtol(argv[1], NULL, 10);
     seconds = strtol(argv[2], NULL, 10);
     run_threads = 1;
-    if (thread_count == 0) {
+    if (thread_count < 1 || thread_count > 99) {
         fprintf(stderr, "Invalid input for threads. Expected [1, 99].\n");
 	return -1;
     }
-    if (seconds == 0) {
+    if (seconds < 1) {
         fprintf(stderr, "Invalid input for seconds. Expected positive integer.\n");
         return -1;
     }
@@ -64,7 +64,6 @@ int main(int argc, char *argv[]) {
 	fprintf(stderr, "Error allocating memory.\n"); 
 	return -1;
     }
-
 
     // Initialize
     int i;
