@@ -43,6 +43,7 @@ def marginalize(bayesNet, margVars):
     """
     marg_net = copy.deepcopy(bayesNet)
     ordered_vars = minimum_degree(marg_net, margVars)
+    ordered_vars = ['b', 'e']
     for var in ordered_vars:
         tables_to_factor = []    
         tables_to_keep = []
@@ -84,7 +85,11 @@ def infer(bayesNet, margVars, obsVars, obsVals):
     """
     observed_net = observe(bayesNet, obsVars, obsVals)
     marg_net = marginalize(observed_net, margVars)
+    print(marg_net[0])
+    print(marg_net[1])
+    print(marg_net[2])
     factor = factor_tables(marg_net)
+    print(factor)
     return normalize(factor)
 
 def createCPT(varnames, probs, levelsList):
