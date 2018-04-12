@@ -1,0 +1,39 @@
+\documentclass[11pt, letterpaper]{hw}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb} % For set naming (i.e. R^n)
+\usepackage{subfig}
+\usepackage{url}
+\usepackage{float}
+
+\title{Homework 1}
+\duedate{}
+\class{CS5460: Operating Systems, Spring 2018}
+\institute{University of Utah}
+\author{Jake Pitkin}
+% IF YOU'RE USING THIS .TEX FILE AS A TEMPLATE, PLEASE REPLACE
+% The author WITH YOUR NAME AND UID.
+% Replace the due date with anyone you worked with i.e. "Worked with: John McCarthy, Watson, & Hal-9000"
+
+\begin{document}
+
+\maketitle
+
+\begin{enumerate}
+
+\item [6.13] \textbf{Chapter 5 of OSC discusses possible race conditions on various kernel data structures. Most scheduling algorithms maintain a run queue, which lists processes eligible to run on a processor. On multicore systems, there are two general options: (1) each processing core has its own run queue, or (2) a single run queue is shared by all processing cores. Briefly give at least one advantage and one disadvantage of each of these approaches.}
+
+\item [5.20a] \textbf{Identify the race condition(s).}
+ 
+\item [5.20b] \textbf{Assume you have a mutex lock named mutex with the operations acquire() and release(). Indicate where the locking needs to be placed to prevent the race condition(s).}
+
+\item [5.20c] \textbf{Could we replace the integer variable "int number\_of\_processes = 0" with the atomic integer "atomic\_t number\_of\_processes = 0" to prevent the race condition(s)? (Assume here this atomic\_t has safe, lock-free, atomic loads and stores and an atomic fetch\_and\_add/fetch\_and\_subtract like operation.)}
+
+\item [10.10] \textbf{Briefly explain why the OS often uses an FCFS disk-scheduling algorithm when the underlying device is an SSD.}
+
+\item [10.14] \textbf{Describe one advantage and two disadvantages of using SSDs as a caching tier compared with using only magnetic disks.}
+ 
+\item [12.16] \textbf{Consider a file system that uses inodes to represent files. Disk blocks are 8 KB in size, and a pointer to a disk block requires 4 bytes. This filesystem has 12 direct disk blocks, as well as one single, one double, and one triple indirect disk blocks entry in its inode. What is the maximum size of a file that can be stored in this file system?}
+\end{enumerate}
+
+\end{document}

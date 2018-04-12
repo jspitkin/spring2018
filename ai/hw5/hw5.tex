@@ -168,8 +168,8 @@ p(a | j, \lnot m) & = \frac{p(j | a) \ p(\lnot m | a) \ \sum_{b} \sum_{e} p(B) \
 \end{align*}
 
 \begin{align*}
-\qquad \qquad \quad &= \frac{0.000226479}{0.0500548} \\ \\
-&= {\bf 0.0045246}
+\qquad \qquad \quad &= \frac{0.000226479}{0.0166848} \\ \\
+&= {\bf 0.013574}
 \end{align*}
 
 
@@ -180,8 +180,147 @@ have to choose a variable to eliminate, choose alphabetically.
 
 \begin{enumerate}
 \item[2.] $p(b | a)$
+
+Variable elimination order: E, J, then M. 
+
+First we will observe $a$ is true to reduce the size of the resulting factors.
+
+$$p(b | a) = \alpha \ p(B) \ \sum_{e} p(E) \ p(a | B, E) \sum_{j} p(J | a) \sum_{m} p(M | a)$$
+
+Step 1: Sum out $E$ and join:
+
+$$f_1(a, B) = \sum_{e} p(E) \ p(a | B, E)$$
+
+\begin{table}[H]
+\centering	
+\begin{tabular}{|cc|c|}
+\hline
+{\bf A} & {\bf B} & $p$ \\
+\hline
+T & T & $0.940020$ \\
+T & F & $0.001578$ \\
+\hline
+\end{tabular}
+\caption{$f_1(a, B)$}
+\end{table}
+
+Giving the new equation:
+
+$$p(b | a) = \alpha \ p(B) \ f_1(a, B) \sum_{j} p(J | a) \sum_{m} p(M | a)$$
+
+Step 2: Sum out $J$ and join:
+
+$$f_2(a) = \sum_{j} p(J | a) = 1$$
+
+Giving the new equation:
+
+$$p(b | a) = \alpha \ p(B) \ f_1(a, B) \ f_2(a) \sum_{m} p(M | a)$$
+
+Step 3: Sum out $M$ and join:
+
+$$f_3(a) = \sum_{m} p(M | a) = 1$$
+
+Giving the new equation: 
+
+$$p(b | a) = \alpha \ p(B) \ f_1(a, B) \ f_2(a) \ f_3(a)$$
+$$p(b | a) = \alpha \ p(B) \ f_1(a, B)$$
+
+Joining $p(B)$ and $f_1(a, B)$:
+
+\begin{table}[H]
+\centering	
+\begin{tabular}{|cc|c|}
+\hline
+{\bf a} & {\bf B} & $p$ \\
+\hline
+T & T & $0.00094$ \\
+T & F & $0.001576$ \\
+\hline
+\end{tabular}
+\end{table}
+
+Alpha can be found by taking the inverse of the sum of the probability table:
+
+$$\alpha = \frac{1}{0.002516}$$
+
+Finally, we finish the inference:
+
+$$p(b|a) = \frac{0.00094}{0.002516} = {\bf 0.3736}$$
+\newpage
+
 \item[4.] $p(a|j, \lnot m)$	
+
+Variable elimination order: $B$ then $E$.
+
+We will observe $j$ to be true and $m$ to be false.
+
+$$p(a | j, \lnot m) = \alpha \ p(j | A) \ p(\lnot m | A) \sum_{e} p(E) \sum_{b} p(B) p(A | B, E)$$
+
+Step 1: Sum out $B$ and join:
+
+$$f_1(A, E) = \sum_{b} p(B) p(A | B, E)$$
+
+\begin{table}[H]
+\centering	
+\begin{tabular}{|cc|c|}
+\hline
+{\bf A} & {\bf E} & $p$ \\
+\hline
+T & T & $0.29066$ \\
+T & F & $0.001939$ \\
+F & T & $0.70934$ \\
+F & F & $0.998061$ \\
+\hline
+\end{tabular}
+\caption{$f_1(A, E)$}
+\end{table}
+
+Giving the new equation:
+
+$$p(a | j, \lnot m) = \alpha \ p(j | A) \ p(\lnot m | A) \sum_{e} p(E) \ f_1(A, E)$$
+
+Step 2: Sum out $E$ and join:
+
+$$f_2(A) = \sum_{e} p(E) \ f_1(A, E)$$
+
+\begin{table}[H]
+\centering	
+\begin{tabular}{|c|c|}
+\hline
+{\bf A} & $p$ \\
+\hline
+T & 0.002516 \\
+F & 0.997483 \\
+\hline
+\end{tabular}
+\caption{$f_2(A)$}
+\end{table}
+
+Giving the new equation:
+
+$$p(a | j, \lnot m) = \alpha \ p(j | A) \ p(\lnot m | A) \ f_2(A)$$
+
+Joining $p(j | A)$, $p(\lnot m | A)$, and $f_2(A)$ with $\lnot m$ and $j$ observed:
+
+\begin{table}[H]
+\centering	
+\begin{tabular}{|c|c|}
+\hline
+{\bf A} & $p$ \\
+\hline
+T & 0.000679 \\
+F & 0.049375 \\
+\hline
+\end{tabular}
+\end{table}
 \end{enumerate}
 
+Alpha can b e found by taking the inverse of the sum of the probability table:
+
+$$\alpha = \frac{1}{0.056165}$$
+
+Then we can finish the inference:
+
+$$p(a | j, \lnot m) = \frac{0.000679}{0.056165} = {\bf 0.013574}$$
 
 \end{document}
