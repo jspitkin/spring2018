@@ -11,7 +11,7 @@
 #include <assert.h>
 
 typedef struct __ret_t {
-    int cs_count;
+    unsigned long n_play;
 } ret_t;
 
 volatile int n_cats;
@@ -21,10 +21,6 @@ volatile int n_birds;
 volatile int cats = 0;
 volatile int dogs = 0;
 volatile int birds = 0;
-
-volatile int cat_play_cnt = 0;
-volatile int dog_play_cnt = 0;
-volatile int bird_play_cnt = 0;
 
 volatile int run_threads = 1;
 
@@ -78,91 +74,155 @@ int main(int argc, char *argv[]) {
 	return -1;
     }
 
-    // Create threads
     int i;
-    int thread_ret;
+    int ret;
+    // Create threads
     for (i = 0; i < n_cats; i++) {
-    	thread_ret = pthread_create(&threads[i], NULL, play, NULL);
-	if (thread_ret != 0) {
-	    fprintf(stderr, "Error creating thread.\n");
-	    return -1;
-	}
-    }
-    for (i = 0; i < n_dogs; i++) {
-    	thread_ret = pthread_create(&threads[i], NULL, play, NULL);
-	if (thread_ret != 0) {
-	    fprintf(stderr, "Error creating thread.\n");
-	    return -1;
-	}
-    }
-    for (i = 0; i < n_birds; i++) {
-    	thread_ret = pthread_create(&threads[i], NULL, play, NULL);
-	if (thread_ret != 0) {
+    	ret = pthread_create(&cat_threads[i], NULL, cat_routine, NULL);
+	if (ret != 0) {
 	    fprintf(stderr, "Error creating thread.\n");
 	    return -1;
 	}
     }
 
-    // Sleep the main thread
-    int sleep_ret;
-    sleep_ret = sleep(10);
-    if (sleep_ret != 0) {
+    for (i = 0; i < n_dogs; i++) {
+    	ret = pthread_create(&dog_threads[i], NULL, dog_routine, NULL);
+	if (ret != 0) {
+	    fprintf(stderr, "Error creating thread.\n");
+	    return -1;
+	}
+    }
+
+    for (i = 0; i < n_birds; i++) {
+    	ret = pthread_create(&bird_threads[i], NULL, bird_routine, NULL);
+	if (ret != 0) {
+	    fprintf(stderr, "Error creating thread.\n");
+	    return -1;
+	}
+    }
+
+    // Sleep the main thread for 10 seconds
+    ret = sleep(10);
+    if (ret != 0) {
 	fprintf(stderr, "Error main thread interrupted.\n");
 	return -1;
     }
+    run_threads = 0;
 
     // Wait for all the threads to complete
-    for (i = 0; i < animal_count; i++) {
-	thread_ret = pthread_join(threads[i], NULL);
-	if (thread_ret != 0) {
-		fprintf(stderr, "Error joining thread.\n");
-		return -1;
+    unsigned long n_cat_play = 0;
+    ret_t *cat_ret;
+    for (i = 0; i < n_cats; i++) {
+	ret = pthread_join(cat_threads[i], (void **) &cat_ret);
+	if (ret != 0) {
+	    fprintf(stderr, "Error joining thread.\n");
+	    return -1;
 	}
+	n_cat_play += cat_ret->n_play;
     }
 
-    printf("cat play = %d, dog play = %d, bird play = %d\n", cat_play_cnt,
-	    dog_play_cnt, bird_play_cnt);
+    unsigned long n_dog_play = 0;
+    ret_t *dog_ret;
+    for (i = 0; i < n_dogs; i++) {
+	ret = pthread_join(dog_threads[i], (void **) &dog_ret);
+	if (ret != 0) {
+	    fprintf(stderr, "Error joining thread.\n");
+	    return -1;
+	}
+	n_dog_play += dog_ret->n_play;
+    }
+
+    unsigned long n_bird_play = 0;
+    ret_t *bird_ret;
+    for (i = 0; i < n_birds; i++) {
+	ret = pthread_join(bird_threads[i], (void **) &bird_ret);
+	if (ret != 0) {
+	    fprintf(stderr, "Error joining thread.\n");
+	    return -1;
+	}
+	n_bird_play += bird_ret->n_play;
+    }
+    printf("cat play = %lu, dog play = %lu, bird play = %lu\n", n_cat_play,
+	    n_dog_play, n_bird_play);
 
     // Free memory
-    free(threads);
+    free(cat_threads);
+    free(dog_threads);
+    free(bird_threads);
+    free(cat_ret);
+    free(dog_ret);
+    free(bird_ret);
 
     return 0;
 }
 
 void *cat_routine(void *args) {
-    return NULL;
+    ret_t *ret = malloc(sizeof(ret_t));
+    if (ret == NULL) {
+	fprintf(stderr, "Error allocating memory.\n"); 
+    }
+    ret->n_play = 0;
+    while (run_threads) {
+	cat_enter();
+	play();
+	ret->n_play++;
+	cat_exit();
+    }
+    return ret;
 }
 
 void *dog_routine(void *args) {
-    return NULL;
+    ret_t *ret = malloc(sizeof(ret_t));
+    if (ret == NULL) {
+	fprintf(stderr, "Error allocating memory.\n"); 
+    }
+    ret->n_play = 0;
+    while (run_threads) {
+	dog_enter();
+	play();
+	ret->n_play++;
+	dog_exit();
+    }
+    return ret;
 }
 
 void *bird_routine(void *args) {
-    return NULL;
+    ret_t *ret = malloc(sizeof(ret_t));
+    if (ret == NULL) {
+	fprintf(stderr, "Error allocating memory.\n"); 
+    }
+    ret->n_play = 0;
+    while (run_threads) {
+	bird_enter();
+	play();
+	ret->n_play++;
+	bird_exit();
+    }
+    return ret;
 }
 
-void cat_enter(void args) {
-    return NULL;
+void cat_enter(void) {
+    cats++;
 }
 
-void dog_enter(void args) {
-    return NULL;
+void dog_enter(void) {
+    dogs++;
 }
 
-void bird_enter(void args) {
-    return NULL;
+void bird_enter(void) {
+    birds++;
 }
 
-void cat_exit(void args) {
-    return NULL;
+void cat_exit(void) {
+    cats--;
 }
 
-void dog_exit(void args) {
-    return NULL;
+void dog_exit(void) {
+    dogs--;
 }
 
-void bird_exit(void args) {
-    return NULL;
+void bird_exit(void) {
+    birds--;
 }
 
 void play(void) {
@@ -173,5 +233,4 @@ void play(void) {
 	assert(cats == 0 || dogs == 0);
 	assert(cats == 0 || birds == 0);
     }
-    return NULL;
 }
