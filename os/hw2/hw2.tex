@@ -42,6 +42,18 @@
 \item [10.14] \textbf{Describe one advantage and two disadvantages of using SSDs as a caching tier compared with using only magnetic disks.}
  
 \item [12.16] \textbf{Consider a file system that uses inodes to represent files. Disk blocks are 8 KB in size, and a pointer to a disk block requires 4 bytes. This filesystem has 12 direct disk blocks, as well as one single, one double, and one triple indirect disk blocks entry in its inode. What is the maximum size of a file that can be stored in this file system?}
+
+First we will consider how much can be stored by the 12 direct disk blocks. Each disk block is $8$ KB and there are 12 so they can store $96$ KB in total.
+
+Next we consider the single indirect block entry. A pointer to a disk block requires $4$ bytes so we can fit $8$ KB / $4$ B $= 64$ disk block pointers in a disk block. This single indirect block entry can map $64 * 8$ KB $= 512$ KB in total.
+
+The double indirect block entry can store $64$ (using the math from the previous step) disk block pointers. Each pointer points to a single indirect block entry which we know can store $512$ KB. So the double indirect block entry can store $64 * 512 = 32,768$ KB in total.
+
+Finally the triple indirect block entry has $64$ disk block pointers to double indirect block entries. Giving $64 * 32,768 = 2,097,152$ KB in total.
+
+To get the maximum size of a file that can be stored, we sum the above four totals:
+
+$$96 \ KB + 512 \ KB + 32,768 \ KB + 2,097,152 \ KB = \boxed{2,130,528 \ KB}$$
 \end{enumerate}
 
 \end{document}
