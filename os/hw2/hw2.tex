@@ -6,7 +6,7 @@
 \usepackage{url}
 \usepackage{float}
 
-\title{Homework 1}
+\title{Homework 2}
 \duedate{}
 \class{CS5460: Operating Systems, Spring 2018}
 \institute{University of Utah}
@@ -22,6 +22,14 @@
 \begin{enumerate}
 
 \item [6.13] \textbf{Chapter 5 of OSC discusses possible race conditions on various kernel data structures. Most scheduling algorithms maintain a run queue, which lists processes eligible to run on a processor. On multicore systems, there are two general options: (1) each processing core has its own run queue, or (2) a single run queue is shared by all processing cores. Briefly give at least one advantage and one disadvantage of each of these approaches.}
+
+{\it Multiple queue pros:} The semaphore operations wait() and signal() must be executed atomically. It's difficult to disable interrupts on every processor (to prevent interleaved operations). But, when each processor has it's own queue interrupts only the processor executing the wait() or signal() operation needs to be disabled. Much more scalable than single queue systems and multiple queues make exploiting cache affinity easier.
+
+{\it Multiple queue cons:} Load balancing is required to attempt to keep an even distribution across all of the processors. Moving processes around during the load balancing process will invalidate the cache and lose cache affinity.
+
+{\it Single queue pros:} Simple to implement. Can use the same scheduling algorithms as you would use in a single processor setup.
+
+{\it Single queue cons:} Locks in code can reduce performance of a single queue system. Additionally, since a processor pulls a process off the front of the queue processes end up running on different processors often. This makes for poor cache affinity unless a mechanism is in place to promote not moving processes around as much.
 
 \item [5.20a] \textbf{Identify the race condition(s).}
  

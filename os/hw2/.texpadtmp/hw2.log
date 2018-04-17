@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.5.22)  12 APR 2018 14:37
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.5.22)  17 APR 2018 00:21
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -298,20 +298,20 @@ Overfull \hbox (5.33879pt too wide) in paragraph at lines 24--25
 
 [1
 
-{/usr/local/texlive/2016/texmf-var/fonts/map/pdftex/updmap/pdftex.map}] (/Users/jsp/spring_2018/os/hw2/.texpadtmp/hw2.aux) ) 
+{/usr/local/texlive/2016/texmf-var/fonts/map/pdftex/updmap/pdftex.map}] [2] (/Users/jsp/spring_2018/os/hw2/.texpadtmp/hw2.aux) ) 
 Here is how much of TeX's memory you used:
- 5078 strings out of 493014
- 75542 string characters out of 6133351
- 140159 words of memory out of 5000000
- 8551 multiletter control sequences out of 15000+600000
- 8903 words of font info for 34 fonts, out of 8000000 for 9000
+ 5080 strings out of 493014
+ 75566 string characters out of 6133351
+ 142159 words of memory out of 5000000
+ 8552 multiletter control sequences out of 15000+600000
+ 9249 words of font info for 35 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  44i,6n,42p,488b,221s stack positions out of 5000i,500n,10000p,200000b,80000s
-</usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb>
-Output written on /Users/jsp/spring_2018/os/hw2/.texpadtmp/hw2.pdf (1 page, 42560 bytes).
+</usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb>
+Output written on /Users/jsp/spring_2018/os/hw2/.texpadtmp/hw2.pdf (2 pages, 62781 bytes).
 PDF statistics:
- 20 PDF objects out of 1000 (max. 8388607)
- 13 compressed objects within 1 object stream
+ 27 PDF objects out of 1000 (max. 8388607)
+ 18 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
