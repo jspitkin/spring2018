@@ -32,12 +32,22 @@
 {\it Single queue cons:} Locks in code can reduce performance of a single queue system more dramatically than a multiple queue system. Additionally, since a processor pulls a process off the front of the queue processes end up running on different processors often. This makes for poor cache affinity unless a mechanism is in place to promote not moving processes around as much.
 
 \item [5.20a] \textbf{Identify the race condition(s).}
+
+On the second line of {\tt allocate\_process()} the variable {\tt number\_of\_processes} is checked to see if the maximum number of processes have been allocated. Multiple threads could not satisfy this if-condition and enter the {\tt else} block. Now each thread in the else block could allocate a new process and it would be possible for the number of processes to surpass {\tt MAX\_PROCCESSES}.
+
+The race condition is on the variable {\tt number\_of\_processes} in general. A race condition can occur when releasing a processes resources and decrementing {\tt number\_of\_processes}. Another thread could be making the if-condition in {\tt allocate\_process()} and there could be available resources that {\tt number\_of\_processes} doesn't reflect yet.
  
 \item [5.20b] \textbf{Assume you have a mutex lock named mutex with the operations acquire() and release(). Indicate where the locking needs to be placed to prevent the race condition(s).}
 
+The race conditions are caused by {\tt number\_of\_processes}. Anytime this variable is accessed a lock must be acquired. This means called {\tt acquire()} at the top of {\tt allocate\_process()} and {\tt release\_process()}. As well as {\tt release()} before they each return.
+
 \item [5.20c] \textbf{Could we replace the integer variable "int number\_of\_processes = 0" with the atomic integer "atomic\_t number\_of\_processes = 0" to prevent the race condition(s)? (Assume here this atomic\_t has safe, lock-free, atomic loads and stores and an atomic fetch\_and\_add/fetch\_and\_subtract like operation.)}
 
+
+
 \item [10.10] \textbf{Briefly explain why the OS often uses an FCFS disk-scheduling algorithm when the underlying device is an SSD.}
+
+An SSD is a random access device. Any location on the disk can be read quickly regardless of where the data is located on the device and independent of the previous read. This makes FCFS a nice algorithm of choice as there are no disk seeks with an SSD. Other algorithms such as SSTF, Scan/Look, and C-Scan/C-Look are better for magnetic disks as seek time must be taken into account.
 
 \item [10.14] \textbf{Describe one advantage and two disadvantages of using SSDs as a caching tier compared with using only magnetic disks.}
 
