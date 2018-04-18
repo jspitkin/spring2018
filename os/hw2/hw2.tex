@@ -23,13 +23,13 @@
 
 \item [6.13] \textbf{Chapter 5 of OSC discusses possible race conditions on various kernel data structures. Most scheduling algorithms maintain a run queue, which lists processes eligible to run on a processor. On multicore systems, there are two general options: (1) each processing core has its own run queue, or (2) a single run queue is shared by all processing cores. Briefly give at least one advantage and one disadvantage of each of these approaches.}
 
-{\it Multiple queue pros:} The semaphore operations wait() and signal() must be executed atomically. It's difficult to disable interrupts on every processor (to prevent interleaved operations). But, when each processor has it's own queue interrupts only the processor executing the wait() or signal() operation needs to be disabled. Much more scalable than single queue systems and multiple queues make exploiting cache affinity easier.
+{\it Multiple queue pros:} The semaphore operations wait() and signal() must be executed atomically. It's difficult to disable interrupts on every processor (to prevent interleaved operations). But when each processor has it's own queue, only interrupts on the processor executing the wait() or signal() operation needs to be disabled. Much more scalable than single queue systems and multiple queues make exploiting cache affinity easier.
 
-{\it Multiple queue cons:} Load balancing is required to attempt to keep an even distribution across all of the processors. Moving processes around during the load balancing process will invalidate the cache and lose cache affinity.
+{\it Multiple queue cons:} Load balancing is required in an attempt to keep an even distribution across all of the processors. Moving processes around during the load balancing process will invalidate the cache and lose cache affinity.
 
 {\it Single queue pros:} Simple to implement. Can use the same scheduling algorithms as you would use in a single processor setup.
 
-{\it Single queue cons:} Locks in code can reduce performance of a single queue system. Additionally, since a processor pulls a process off the front of the queue processes end up running on different processors often. This makes for poor cache affinity unless a mechanism is in place to promote not moving processes around as much.
+{\it Single queue cons:} Locks in code can reduce performance of a single queue system more dramatically than a multiple queue system. Additionally, since a processor pulls a process off the front of the queue processes end up running on different processors often. This makes for poor cache affinity unless a mechanism is in place to promote not moving processes around as much.
 
 \item [5.20a] \textbf{Identify the race condition(s).}
  
@@ -40,20 +40,28 @@
 \item [10.10] \textbf{Briefly explain why the OS often uses an FCFS disk-scheduling algorithm when the underlying device is an SSD.}
 
 \item [10.14] \textbf{Describe one advantage and two disadvantages of using SSDs as a caching tier compared with using only magnetic disks.}
+
+{\it Advantages:} SSDs are 10 times cheaper than DRAM per bit. They also have 10 times lower-latency compared to a magnetic disk. This makes them a good candidate to operate as a caching tier, of reasonable size, for the magnetic disk. SSD's perform very well at random I/O as there are no mechanical parts.
+
+{\it Disadvantages:} If too many writes are performed to an SSD it will wear out its flash blocks. Caching data that a process reads from the magnetic disk will cause many writes to the SSD. Cache eviction polices could be tricky as well. When you want to re-write any page (evicting old data) the entire block the page resides in must be erased. Finally, when the disk is more than $50\%$ utilized the performance begins to fall quickly. They will result in a lot of wasted disk space as you can't use the entire disk as a cache.
  
 \item [12.16] \textbf{Consider a file system that uses inodes to represent files. Disk blocks are 8 KB in size, and a pointer to a disk block requires 4 bytes. This filesystem has 12 direct disk blocks, as well as one single, one double, and one triple indirect disk blocks entry in its inode. What is the maximum size of a file that can be stored in this file system?}
 
-First we will consider how much can be stored by the 12 direct disk blocks. Each disk block is $8$ KB and there are 12 so they can store $96$ KB in total.
+First we will consider how many block addresses can be stored in a block. Disk blocks are $8$ KB and have $4$ byte addresses. So they can store $8,192 / 4 = 2,048$ addresses.
 
-Next we consider the single indirect block entry. A pointer to a disk block requires $4$ bytes so we can fit $8$ KB / $4$ B $= 64$ disk block pointers in a disk block. This single indirect block entry can map $64 * 8$ KB $= 512$ KB in total.
+There are 12 disc blocks address by the 12 direct disk blocks. 
 
-The double indirect block entry can store $64$ (using the math from the previous step) disk block pointers. Each pointer points to a single indirect block entry which we know can store $512$ KB. So the double indirect block entry can store $64 * 512 = 32,768$ KB in total.
+The single indirect disk block can address $2,048$ disk blocks. 
 
-Finally the triple indirect block entry has $64$ disk block pointers to double indirect block entries. Giving $64 * 32,768 = 2,097,152$ KB in total.
+The double indirect block can address $2,048$ single indirect blocks that each address $2,048$ disc blocks themselves giving $2,048^2$ addressed disc blocks. 
 
-To get the maximum size of a file that can be stored, we sum the above four totals:
+Finally the triple indirect block addresses $2,048$ double indirect blocks or $2,048^3$ direct blocks.
 
-$$96 \ KB + 512 \ KB + 32,768 \ KB + 2,097,152 \ KB = \boxed{2,130,528 \ KB}$$
+To get the maximum size of a file that can be stored, we sum together the number of addressed disc blocks and multiply by the storage of a disc block:
+
+$$(12 + 2,048 + 2,048^2 + 2,048^3) * 8,192 \ bytes$$
+$$(12 + 2,048 + 4,194,304 + 8,589,934,592) * 8,192 \ bytes$$
+$$\boxed{70,403,120,791,552 \ bytes}$$
 \end{enumerate}
 
 \end{document}
