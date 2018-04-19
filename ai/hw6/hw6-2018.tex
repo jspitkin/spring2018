@@ -72,36 +72,36 @@ $$\boxed{\pi = \Big[\frac{2}{3} \ \frac{1}{3}\Big]}$$
 \end{enumerate}
 \vspace{-0.5cm}
 \section{Alice and the Crazy Coke Machine}
-\vspace{-0.5cm}
-Alice is up late studying for her algorithms final exam and needs to
-stay hydrated (and caffienated!).  Unfortunately, Clarence was the one
-who bought the soda machine in the lab.  He went for the cheapest
-model.  All you can do with this soda machine is put money in and hope
-it gives you the type of drink you want.  It carries three types of
-soda: Coke (C), Diet Coke (D) and Sprite (S).
-
-Alice has been monitoring the soda machine for a while and has figured
-out that it behaves as an HMM.  It has two internal states (call them
-A and B).  When asked for a soda from state A, it gives a coke with
-probability 1/2, and a diet coke and a sprite each with probability
-1/4.  On the other hand, when asked for a soda in state B, it gives a
-diet coke with probability 1/2, a sprite with probability 1/3 and a
-coke with probability 1/6.  Furthermore, it transitions from state A
-to A with probability 4/5 and from state B to B with probability 3/5.
-
-The machine formally works as follows.  It is in some state $s$.
-Someone puts in money and it dispenses a soda according to the
-probability rules set out above, being in state $s$.  It then
-(randomly) transitions to a new state $s'$ according to the transition
-probabilities above.
 
 \begin{enumerate}
-\item Draw a state space lattice for this soda machine (as on the final slide of day 20) for three time steps.
+\item {\bf Draw a state space lattice for this soda machine (as on the final slide of day 20) for three time steps. }
 
 \begin{tikzpicture}[scale=2]
     \tikzstyle{ann} = [draw=none,fill=none,right]
-    \matrix[nodes={draw, thick},
-        row sep=3cm,column sep=3cm] {
+        
+    \matrix[nodes={draw, minimum size=0.1cm, fill=black!20},
+        row sep=0cm,column sep=0.2cm] at (-5,-1.8){
+    \node[circle] (7) {\ $C_1$ \ }; &
+    \node[circle] (8) {\ $D_1$ \ }; &
+    \node[circle] (9) {\ $S_1$ \ }; & \\
+    };
+    
+    \matrix[nodes={draw , minimum size=0.1cm, fill=black!20},
+        row sep=0cm,column sep=0.2cm] at (-1.5,-1.8){
+    \node[circle] (10) {\ $C_2$ \ }; &
+    \node[circle] (11) {\ $D_2$ \ }; &
+    \node[circle] (12) {\ $S_2$ \ }; & \\
+    };
+    
+    \matrix[nodes={draw, minimum size=0.1cm, fill=black!20},
+        row sep=0cm,column sep=0.2cm] at (1.92,-1.8){
+    \node[circle] (13) {\ $C_3$ \ }; &
+    \node[circle] (14) {\ $D_3$ \ }; &
+    \node[circle] (15) {\ $S_3$ \ }; & \\
+    };
+    
+    \matrix[nodes={draw, thick, minimum size=1cm},
+        row sep=2cm,column sep=6cm] at (0,0) {
     \node[rectangle] (1) {\ A \ }; &
     \node[rectangle] (2) {\ A \ }; &
     \node[rectangle] (3) {\ A \ }; & \\
@@ -110,6 +110,13 @@ probabilities above.
     \node[rectangle] (6) {\ B \ }; & \\
     };
     
+    \matrix[nodes={draw, thick},
+        row sep=1cm,column sep=6cm] at (0, -2.4){
+    \node[draw=none,fill=none] (16) {\ $X_1$ \ }; &
+    \node[draw=none,fill=none] (17) {\ $X_2$ \ }; &
+    \node[draw=none,fill=none] (18) {\ $X_3$ \ }; & \\
+    };
+
     \draw[]  (1) edge node{} (2);
     \draw[]  (2) edge node{} (3);
     \draw[]  (2) edge node{} (6);
@@ -118,20 +125,73 @@ probabilities above.
     \draw[]  (1) edge node{} (5);
     \draw[]  (4) edge node{} (2);
     \draw[]  (5) edge node{} (3);
+    
+    \draw[]  (1) edge[bend right] node{} (7);
+    \draw[]  (1) edge[bend right] node{} (8);
+    \draw[]  (1) edge[bend left] node{} (9);
+    \draw[]  (4) edge node{} (7);
+    \draw[]  (4) edge node{} (8);
+    \draw[]  (4) edge node{} (9);
+    
+    \draw[]  (2) edge[bend right] node{} (10);
+    \draw[]  (2) edge[bend right] node{} (11);
+    \draw[]  (2) edge[bend left] node{} (12);
+    \draw[]  (5) edge node{} (10);
+    \draw[]  (5) edge node{} (11);
+    \draw[]  (5) edge node{} (12);
+    
+    \draw[]  (3) edge[bend right] node{} (13);
+    \draw[]  (3) edge[bend right] node{} (14);
+    \draw[]  (3) edge[bend left] node{} (15);
+    \draw[]  (6) edge node{} (13);
+    \draw[]  (6) edge node{} (14);
+    \draw[]  (6) edge node{} (15);
+
+
 \end{tikzpicture}
 
-\item Suppose that Alice doesn't know what state the machine is in
+Where square nodes are states and circle nodes are observations.
+
+\item {\bf Suppose that Alice doesn't know what state the machine is in
   currently (specifically, she believes it's equally likely to be in
   either state), but puts money in and gets a Sprite out.  What is the
   probability distribution over states that it was in when Alice put
   her money in?  What is the probability distribution over states that
-  it is in now?
+  it is in now?}
+  
+  Before Alice puts any money into the machine she believes there is a uniform distribution over possible states:
+  
+  $$\boxed{P(A_0) = 0.5, \ \ \ P(B_0) = 0.5}$$
+  
+  Now Alice puts in money and gets a Sprite. We will compute the probability of being in each state given we observed a Sprite using Bayes' rule:
+  
+  $$P(A_1 | S_1) = \frac{P(S_1 | A_1) P(A_1)}{P(S_1)}$$
+  
+  $$P(B_1 | S_1) = \frac{P(S_1 | B_1) P(B_1)}{P(S_1)}$$
+  
+  We know $P(S_1 | A_1) = 1/4$ and $P(S_1 | B_1)$ = $1/3$ from the problem. We must compute $P(A_1)$ and $P(B_1)$ first:
+  
+  $$P(A_1) = P(A_1 | A_0)P(A_0) + P(A_1 | B_0)P(B_0) = 0.8 * 0.5 + 0.4 * 0.5 = 0.6$$
+  
+  $$P(B_1) = P(B_1 | B_0)P(B_0) + P(B_1 | A_0)P(A_0) = 0.6 * 0.5 + 0.2 * 0.5 = 0.4$$
+  
+  Now that we have these, we can compute $P(S_1)$:
+  
+  $$P(S_1) = P(S_1 | A_1)P(A_1) + P(S_1 | B_1)P(B_1) = 0.25 * 0.6 + 0.333333 * 0.4 = 0.28333$$
+  
+  Putting it all together:
+  
+  $$P(A_1 | S_1) = \frac{P(S_1 | A_1) P(A_1)}{P(S_1)} = \frac{0.25 * 0.6}{0.28333} = 0.5294$$
+  
+  $$P(B_1 | S_1) = \frac{P(S_1 | B_1) P(B_1)}{P(S_1)} = \frac{0.3333 * 0.4}{0.28333} = 0.4706$$
+  
+  $$\boxed{P(A_1 | S_1) = 0.5294, \ \ \ P(B_1 | S_1) = 0.4706}$$
 
-\item Suppose Alice comes back the next day (so again she doesn't know
+\item {\bf Suppose Alice comes back the next day (so again she doesn't know
   what state the machine is in) and really wants a diet coke.
   Unfortunately, the machine isn't being particularly nice to her and
   it produces the following series of emissions upon taking money from
   Alice: C S S D.  What is the most likely sequence of states the
-  machine went through in this process?
+  machine went through in this process?}
 \end{enumerate}
 \end{document}
