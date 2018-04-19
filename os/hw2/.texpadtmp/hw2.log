@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.5.22)  17 APR 2018 22:35
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.5.22)  18 APR 2018 09:39
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -299,7 +299,7 @@ Overfull \hbox (5.33879pt too wide) in paragraph at lines 24--25
 [1
 
 {/usr/local/texlive/2016/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
-Overfull \hbox (0.47955pt too wide) in paragraph at lines 54--55
+Overfull \hbox (0.47955pt too wide) in paragraph at lines 56--57
 []\OT1/cmr/m/it/10.95 Advantages: \OT1/cmr/m/n/10.95 SSDs are 10 times cheaper than DRAM per bit. They also have 10 times lower- 
  []
 
@@ -307,13 +307,13 @@ Overfull \hbox (0.47955pt too wide) in paragraph at lines 54--55
 Here is how much of TeX's memory you used:
  5082 strings out of 493014
  75590 string characters out of 6133351
- 142159 words of memory out of 5000000
+ 143159 words of memory out of 5000000
  8553 multiletter control sequences out of 15000+600000
  9417 words of font info for 36 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  44i,6n,42p,559b,221s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
-Output written on /Users/jsp/spring_2018/os/hw2/.texpadtmp/hw2.pdf (3 pages, 106119 bytes).
+Output written on /Users/jsp/spring_2018/os/hw2/.texpadtmp/hw2.pdf (3 pages, 106664 bytes).
 PDF statistics:
  46 PDF objects out of 1000 (max. 8388607)
  32 compressed objects within 1 object stream

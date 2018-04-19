@@ -23,7 +23,7 @@
 
 \item [6.13] \textbf{Chapter 5 of OSC discusses possible race conditions on various kernel data structures. Most scheduling algorithms maintain a run queue, which lists processes eligible to run on a processor. On multicore systems, there are two general options: (1) each processing core has its own run queue, or (2) a single run queue is shared by all processing cores. Briefly give at least one advantage and one disadvantage of each of these approaches.}
 
-{\it Multiple queue pros:} The semaphore operations wait() and signal() must be executed atomically. It's difficult to disable interrupts on every processor (to prevent interleaved operations). But when each processor has it's own queue, only interrupts on the processor executing the wait() or signal() operation needs to be disabled. Much more scalable than single queue systems and multiple queues make exploiting cache affinity easier.
+{\it Multiple queue pros:} More scalable than single queue systems and multiple queues make exploiting cache affinity easier. The semaphore operations wait() and signal() must be executed atomically. It's difficult to disable interrupts on every processor (to prevent interleaved operations). But when each processor has it's own queue, only interrupts on the processor executing the wait() or signal() operation needs to be disabled. 
 
 {\it Multiple queue cons:} Load balancing is required in an attempt to keep an even distribution across all of the processors. Moving processes around during the load balancing process will invalidate the cache and lose cache affinity.
 
@@ -43,7 +43,9 @@ The race conditions are caused by {\tt number\_of\_processes}. Anytime this vari
 
 \item [5.20c] \textbf{Could we replace the integer variable "int number\_of\_processes = 0" with the atomic integer "atomic\_t number\_of\_processes = 0" to prevent the race condition(s)? (Assume here this atomic\_t has safe, lock-free, atomic loads and stores and an atomic fetch\_and\_add/fetch\_and\_subtract like operation.)}
 
+As the code is currently written, this wouldn't help with the first race condition described in part a. Consider {\tt number\_of\_processes} = $254$ and two threads check the if-condition (atomically) and still move into the else block. Now both allocate resources and we have more than $255$ processes.
 
+We do have an atomic fetch\_and\_add to work with now. We could modify the code to increment {\tt number\_of\_processes} and check the if-condition in one atomic operation. This would resolve our race condition centered around checking a shared counter and incrementing said counter.
 
 \item [10.10] \textbf{Briefly explain why the OS often uses an FCFS disk-scheduling algorithm when the underlying device is an SSD.}
 
@@ -51,15 +53,15 @@ An SSD is a random access device. Any location on the disk can be read quickly r
 
 \item [10.14] \textbf{Describe one advantage and two disadvantages of using SSDs as a caching tier compared with using only magnetic disks.}
 
-{\it Advantages:} SSDs are 10 times cheaper than DRAM per bit. They also have 10 times lower-latency compared to a magnetic disk. This makes them a good candidate to operate as a caching tier, of reasonable size, for the magnetic disk. SSD's perform very well at random I/O as there are no mechanical parts.
+{\it Advantages:} SSDs are 10 times cheaper than DRAM per bit. They also have 10 times lower-latency compared to a magnetic disk. This makes them a good candidate to operate as a caching tier, of reasonable size, for the magnetic disk. SSD's perform very well at random I/O as they are a random access device.
 
-{\it Disadvantages:} If too many writes are performed to an SSD it will wear out its flash blocks. Caching data that a process reads from the magnetic disk will cause many writes to the SSD. Cache eviction polices could be tricky as well. When you want to re-write any page (evicting old data) the entire block the page resides in must be erased. Finally, when the disk is more than $50\%$ utilized the performance begins to fall quickly. They will result in a lot of wasted disk space as you can't use the entire disk as a cache.
+{\it Disadvantages:} Caching data that a process reads from the magnetic disk will cause many writes to the SSD. Cache eviction polices could be tricky as well. When you want to re-write any page (evicting old data) the entire block the page resides in must be erased. If too many writes are performed to an SSD it will wear out its flash blocks. Finally, when the disk is more than $50\%$ utilized the performance begins to fall quickly. They will result in a lot of wasted disk space as you can't use the entire disk as a cache.
  
 \item [12.16] \textbf{Consider a file system that uses inodes to represent files. Disk blocks are 8 KB in size, and a pointer to a disk block requires 4 bytes. This filesystem has 12 direct disk blocks, as well as one single, one double, and one triple indirect disk blocks entry in its inode. What is the maximum size of a file that can be stored in this file system?}
 
 First we will consider how many block addresses can be stored in a block. Disk blocks are $8$ KB and have $4$ byte addresses. So they can store $8,192 / 4 = 2,048$ addresses.
 
-There are 12 disc blocks address by the 12 direct disk blocks. 
+There are 12 disc blocks addressed by the 12 direct disk blocks. 
 
 The single indirect disk block can address $2,048$ disk blocks. 
 
