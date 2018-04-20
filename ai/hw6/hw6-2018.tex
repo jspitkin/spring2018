@@ -193,5 +193,48 @@ Where square nodes are states and circle nodes are observations.
   it produces the following series of emissions upon taking money from
   Alice: C S S D.  What is the most likely sequence of states the
   machine went through in this process?}
+  
+  We start with a uniform prior over the two states A and B:
+  
+  $$P(A_1) = 0.5, \ \ \ P(B_1) = 0.5$$
+  
+  First we compute $m_1[A]$ and $m_1[B]$ using the prior and observing a Coke:
+  
+  $$m_1[A] = P(C_1 | A_1)P(A_1) = 0.5 * 0.5 = 0.25$$
+  $$m_1[B] = P(C_1 | B_1)P(B_1) = 0.16667 * 0.5 = 0.083334$$
+  
+  The second observation was a Sprite. Using $m_1$ we can compute $m_2$ for both states:
+  
+  $$m_2[A] = P(S_2 | A_2) * max\{P(A_2 | A_1) * m_1[A], P(A_2 | B_1) * m_1[B]\}$$
+  $$m_2[A] = 0.25 * max\{{\bf 0.2}, 0.033336\}$$
+  $$m_2[A] = 0.05$$
+  
+  $$m_2[B] = P(S_2 | B_2) * max\{P(B_2 | B_1) * m_1[B], P(B_2 | A_1) * m_1[A]\}$$
+  $$m_2[B] = 0.3333 * max\{0.05, 0.05\}$$
+  $$m_2[B] = 0.01666$$
+  
+  The third observation was another Sprite:
+  
+  $$m_3[A] = P(S_3 | A_3) * max\{P(A_3 | A_2) * m_2[A], P(A_3 | B_2) * m_2[B]\}$$
+  $$m_3[A] = 0.25 * max\{{\bf 0.04}, 0.006664\}$$
+  $$m_3[A] = 0.01$$
+  
+  $$m_3[B] = P(S_3 | B_3) * max\{P(B_3 | B_2) * m_2[B], P(B_3 | A_2) * m_2[A]\}$$
+  $$m_3[B] = 0.3333 * max\{0.01, 0.01\}$$
+  $$m_3[B] = 0.003333$$
+  
+  The final observation was a Diet Coke:
+  
+  $$m_4[A] = P(D_4 | A_4) * max\{P(A_4 | A_3) * m_3[A], P(A_4 | B_3) * m_3[B]\}$$
+  $$m_4[A] = 0.25 * max\{{\bf 0.008}, 0.0013332\}$$
+  $$m_4[A] = 0.002$$
+  
+  $$m_4[B] = P(D_4 | B_4) * max\{P(B_4 | B_3) * m_3[B], P(B_4 | A_3) * m_3[A]\}$$
+  $$m_4[B] = 0.5 * max\{0.002, 0.002\}$$
+  $$m_4[B] = 0.001$$
+  
+  Based on the $m_4$ values, A is the most likely state on purcahse 4. We can trace backwards and see which max was taken to recover the most likely sequence of states the machine went through. I've bolded the path above. It's most probable that the machine was in state A for all four purchases.
+  
+  $$\boxed{A \ A \ A \ A}$$
 \end{enumerate}
 \end{document}
