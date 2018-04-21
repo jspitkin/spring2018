@@ -147,20 +147,21 @@ class ExactInference(InferenceModule):
         noisyDistance = observation
         emissionModel = busters.getObservationDistribution(noisyDistance)
         pacmanPosition = gameState.getPacmanPosition()
-
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
-
-        # Replace this code with a correct observation update
-        # Be sure to handle the "jail" edge case where the ghost is eaten
-        # and noisyDistance is None
         allPossible = util.Counter()
+
+        # Ghost has been captured
+        if noisyDistance == None:
+            allPossible[self.getJailPosition()] = 1
+            allPossible.normalize()
+            self.beliefs = allPossible
+            return
+
+        # Otherwise update belief distribution
         for p in self.legalPositions:
             trueDistance = util.manhattanDistance(p, pacmanPosition)
             if emissionModel[trueDistance] > 0:
-                allPossible[p] = 1.0
-
-        "*** END YOUR CODE HERE ***"
+                # new belief = old belief * P(noisyDistance | trueDistance)
+                allPossible[p] = self.beliefs[p] * emissionModel[trueDistance]
 
         allPossible.normalize()
         self.beliefs = allPossible
@@ -218,8 +219,14 @@ class ExactInference(InferenceModule):
         are used and how they combine to give us a belief distribution over new
         positions after a time update from a particular position.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        allPossible = util.Counter()
+        for oldPos in self.legalPositions:
+            newPosDist = self.getPositionDistribution(self.setGhostPosition(gameState, oldPos))
+            for newPos, prob in newPosDist.items():
+                # new belief += old belief * P(ghost at pos p at t + 1 | pos p at t)
+                allPossible[newPos] += self.beliefs[oldPos] * prob
+        allPossible.normalize()
+        self.beliefs = allPossible
 
     def getBeliefDistribution(self):
         return self.beliefs

@@ -162,5 +162,25 @@ class GreedyBustersAgent(BustersAgent):
         livingGhostPositionDistributions = \
             [beliefs for i, beliefs in enumerate(self.ghostBeliefs)
              if livingGhosts[i+1]]
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        
+        # Consider the most likely position for each ghost
+        allGhostPos = [dist.argMax() for dist in livingGhostPositionDistributions]
+
+        # Find the closest ghost
+        closestGhostPos = None
+        closestDist = float("inf")
+        for pos in allGhostPos:
+            if self.distancer.getDistance(pacmanPosition, pos) < closestDist:
+                closestGhostPos = pos
+                closestDist = self.distancer.getDistance(pacmanPosition, pos)
+
+        # Find the action that brings Pacman closer to that ghost
+        bestAction = None
+        bestActionDist = float("inf")
+        for action in gameState.getLegalPacmanActions():
+            succPos = Actions.getSuccessor(pacmanPosition, action)
+            if self.distancer.getDistance(succPos, closestGhostPos) < bestActionDist:
+                bestAction = action
+                bestActionDist = self.distancer.getDistance(succPos, closestGhostPos)
+
+        return bestAction
