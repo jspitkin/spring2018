@@ -1,0 +1,52 @@
+\documentclass[fleqn]{hermans-hw}
+
+\usepackage{notes}
+\usepackage{url}
+\usepackage{graphicx}
+\usepackage{hyperref} 
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage[linewidth=1pt, leftmargin=0,rightmargin=0, innertopmargin = \topskip,splittopskip=\topskip, innerleftmargin=2,innerrightmargin=10]{mdframed}
+\topmargin -1.5cm        % read Lamport p.163
+\oddsidemargin -0.04cm   % read Lamport p.163
+\evensidemargin -0.04cm  % same as oddsidemargin but for left-hand pages
+\textwidth 16.59cm
+\textheight 21.94cm
+\parskip 7.2pt           % sets spacing between paragraphs
+
+
+\title{HW7: AI in the News}
+\class{CS6300: Artificial Intelligence, Spring 2018}
+\institute{University of Utah}
+\author{Jake Pitkin}
+% IF YOU'RE USING THIS .TEX FILE AS A TEMPLATE, PLEASE REPLACE
+% The author WITH YOUR NAME AND UID.
+% Replace the due date with anyone you worked with i.e. "Worked with: John McCarthy, Watson, & Hal-9000"
+\begin{document}
+\maketitle
+\section*{New York City Passes Bill to Study Biases in Algorithms Used by the City \href{https://motherboard.vice.com/en_us/article/xw4xdw/new-york-city-algorithmic-bias-bill-law}{{\bf[Link]}}} 
+
+{\bf How does the article define AI / does it give a definition at all? If not, what is the implicit / implied definition?}
+
+The article does not provide an explicit mention of the word AI or provide a definition. Instead they largely use algorithm/algorithmic as blanket terms to refer to software. They refer to the algorithms as "tools" that can be used to provide officials with "recommendations".When discussing predictive policing, they state "uses statistics to determine" to refer to statistical inference models that are used to classify people.
+
+{\bf What research is being reported on and how can it be related to material covered this semester in class? }
+
+The author provides links to some related research in algorithmic bias. First, an investigation conducted in 2016 that reported a risk assessment algorithm was more likely to mislabel black than white defendants. Additionally they briefly discuss how facial recognition algorithms were less accurate for black and female faces.
+
+I think the material covered in the course can partially explain both of these. Statistical inference models can only reflect the data provided to them. If 
+	care isn't taken models can overfit to the provided training data and false correlation can be reported on future data. Additionally, priors and various hyper-parameters can be used to get desired results out of a model.
+
+{\bf Does the article express any fears / philosophical issues relating to AI? Are these concerns valid based on the research described? }
+
+The focus on this article is discuss the hazards of non-transparency in algorithms used for legal decisions and policing. The use of opaque algorithms as legal tools is terrifying for anyone on the margins of society. Systemic bias propagates through collected data and is bolstered by these models. These concerns are valid and shown in the results of the provided research. These is still a young area of research but is growing rapidly.
+
+{\bf  Do you agree with the articles view of the work? Explain why or why not. }
+
+I agree with the views in this work. I don't think statistical models have a place in non-trivial decision making. That is, decisions with consequences such as legal proceedings, what neighborhoods police patrol, if someone gets a loan, prison sentencing, and the list goes on.
+
+Bias can easily be injected into predictive statistical models if they aren't transparent. Training data, priors, and parameters can be used to produce the desired model. Transparency isn't always possible with statistical models. For example AI researchers don't fully understand why neural networks produce the results that they do.
+
+Finally, there are leagues of dedicated researchers and professionals in the social sciences. Their role in society is to design policies and make decisions in situations that aren't black and white. I don't think an AI can replace human decision making in these areas.
+
+\end{document}

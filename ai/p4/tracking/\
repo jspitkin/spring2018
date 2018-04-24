@@ -417,8 +417,7 @@ class JointParticleFilter:
         Storing your particles as a Counter (where there could be an associated
         weight with each position) is incorrect and may produce errors.
         """
-        ghostPos = list(itertools.product(self.legalPositions, repeat=self.numGhosts))
-        self.particles = [ghostPos[i % len(ghostPos)] for i in range(self.numParticles)]
+        "*** YOUR CODE HERE ***"
 
     def addGhostAgent(self, agent):
         """
@@ -465,29 +464,7 @@ class JointParticleFilter:
             return
         emissionModels = [busters.getObservationDistribution(dist) for dist in noisyDistances]
 
-        
-        # Ghost has been captured
-        #if noisyDistance == None:
-        #    self.particles = [self.getJailPosition() for _ in range(self.numParticles)]
-        #    return
-
-        for i in range(self.numGhosts):
-            # Update belief distribution
-            beliefDistribution = self.getBeliefDistribution()
-            for p in self.legalPositions:
-                trueDistance = util.manhattanDistance(p, pacmanPosition)
-                beliefDistribution[p] *= emissionModels[i][trueDistance]
-
-            # Check if all particles received a weight of 0
-            if beliefDistribution.totalCount() == 0:
-                # Resample with a uniform distribution
-               self.initializeUniformly(gameState) 
-            else:
-                # Resample with new distribution
-                self.particles = util.nSample(beliefDistribution.values(),
-                                              beliefDistribution.keys(),
-                                              self.numParticles)
-
+        "*** YOUR CODE HERE ***"
 
     def getParticleWithGhostInJail(self, particle, ghostIndex):
         """
@@ -554,11 +531,8 @@ class JointParticleFilter:
         self.particles = newParticles
 
     def getBeliefDistribution(self):
-        belief = util.Counter()
-        for particle in self.particles:
-            belief[particle] += 1
-        belief.normalize()
-        return belief
+        "*** YOUR CODE HERE ***"
+        util.raiseNotDefined()
 
 # One JointInference module is shared globally across instances of MarginalInference
 jointInference = JointParticleFilter()
