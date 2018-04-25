@@ -1,5 +1,5 @@
 /* author: jake pitkin
- * last edit: april 2 2018
+ * last edit: april 25 2018
  * assignment 5 - problem 1
  * cs5460 - operating systems
  */
@@ -24,9 +24,9 @@ volatile int birds = 0;
 
 volatile int run_threads = 1;
 
-pthread_cond_t cat = PTHREAD_COND_INITIALIZER;
-pthread_cond_t dog = PTHREAD_COND_INITIALIZER;
-pthread_cond_t bird = PTHREAD_COND_INITIALIZER;
+pthread_cond_t cv_cat = PTHREAD_COND_INITIALIZER;
+pthread_cond_t cv_dog = PTHREAD_COND_INITIALIZER;
+pthread_cond_t cv_bird = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void *cat_routine(void *args);
@@ -202,27 +202,49 @@ void *bird_routine(void *args) {
 }
 
 void cat_enter(void) {
+    pthread_mutex_lock(&mutex);
+    while (dogs > 0 || birds > 0)
+	pthread_cond_wait(&cv_cat, &mutex);
     cats++;
+    pthread_mutex_unlock(&mutex);
 }
 
 void dog_enter(void) {
+    pthread_mutex_lock(&mutex);
+    while (cats > 0)
+	pthread_cond_wait(&cv_dog, &mutex);
     dogs++;
+    pthread_mutex_unlock(&mutex);
 }
 
 void bird_enter(void) {
+    pthread_mutex_lock(&mutex);
+    while (cats > 0)
+	pthread_cond_wait(&cv_bird, &mutex);
     birds++;
+    pthread_mutex_unlock(&mutex);
 }
 
 void cat_exit(void) {
+    pthread_mutex_lock(&mutex);
     cats--;
+    pthread_cond_broadcast(&cv_dog);
+    pthread_cond_broadcast(&cv_bird);
+    pthread_mutex_unlock(&mutex);
 }
 
 void dog_exit(void) {
+    pthread_mutex_lock(&mutex);
     dogs--;
+    pthread_cond_broadcast(&cv_cat);
+    pthread_mutex_unlock(&mutex);
 }
 
 void bird_exit(void) {
+    pthread_mutex_lock(&mutex);
     birds--;
+    pthread_cond_broadcast(&cv_cat);
+    pthread_mutex_unlock(&mutex);
 }
 
 void play(void) {

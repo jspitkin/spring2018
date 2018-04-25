@@ -145,10 +145,10 @@ void spin_lock(volatile spin_lock_t *s) {
     int ret;
     me = atomic_xadd(&(s->counter));
     while (me != s->turn) {
-	ret = sched_yield();
-	if (ret != 0) {
-	    fprintf(stderr, "Error yielding processor.\n");
-	}
+//	ret = sched_yield();
+//	if (ret != 0) {
+//	    fprintf(stderr, "Error yielding processor.\n");
+//	}
     }
 
 }
