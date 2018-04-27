@@ -18,7 +18,8 @@
 
 uint32_t crc32(uint32_t crc, const void *buf, size_t size);
 void string_sort(char *arr[], int len);
-char *get_path(char *dir, char *file_name);
+char *get_path(char *dir_path, char *file_name);
+void print_file_checksum(char *dir_path, char *file_name);
 
 int main(int argc, char *argv[]) {
     // Validate input
@@ -55,48 +56,97 @@ int main(int argc, char *argv[]) {
     // Sort the file names
     string_sort(file_names, file_count);
 
+    // Checksum each file and print to stdout
+    for (int i = 0; i < file_count; i++) {
+	print_file_checksum(dir_path, file_names[i]); 
+    }
+
+    // Close the directory stream
+    int ret = closedir(dir_stream);
+    if (ret != 0) {
+	fprintf(stderr, "Something went wrong with closing %s.\n", dir_path);
+	return -1;
+    }
+    
+    return 0;
+}
+
+
+/* Selection sort on an array of strings using strcmp 
+ * */
+void string_sort(char *arr[], int len) {	
+    int i, j, min_index = 0;
+    char *tmp;
+    for (i = 0; i < len-1; i++) {
+	min_index = i;
+	for (j = i+1; j < len; j++) {
+	    if (strcmp(arr[j], arr[min_index]) < 0)
+		min_index = j;
+	}
+	if (min_index != i) {
+	    tmp = arr[i];
+	    arr[i] = arr[min_index];
+	    arr[min_index] = tmp;
+	}
+    }
+}
+
+/* Given a directory and a file name, returns a path to that file.
+ * If the directory name doesn't contain a trailing '/', one is added. 
+ * */
+char *get_path(char *dir_path, char *file_name) {
+    if (strlen(dir_path) == 0) 
+	return file_name;
+    else if (dir_path[strlen(dir_path)] == '/') {
+        char *path = malloc(strlen(dir_path) + strlen(file_name) + 1);
+	strcpy(path, dir_path);
+	strcat(path, file_name);
+	return path;
+    }
+    else {
+        char *path = malloc(strlen(dir_path) + strlen(file_name) + 2);
+	strcpy(path, dir_path);
+	strcat(path, "/");
+	strcat(path, file_name);
+	return path;
+    }
+}
+
+void print_file_checksum(char *dir_path, char *file_name) {
     struct stat st;
     int fd, ret;
     void *file_data;
     char *path;
-    for (int i = 0; i < file_count; i++) {
-        errno = 0;
-	path = get_path(dir_path, file_names[i]);
-        ret = stat(path, &st);	
-	// File is empty
-	if (st.st_size < 1) 
-	    continue;
-	fd = open(path, O_RDONLY, 0);
-	// Access to the file denied
-	if (errno == 13) {
-	    printf("%s ACCESS ERROR\n", file_names[i]);
-	    continue;
-	}
-	if (fd == -1 || ret == -1) {
-	    fprintf(stderr, "Something went wrong while opening a file.\n");
-	    return -1;
-	}
-	file_data = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE | MAP_POPULATE, fd, 0);
-	if (file_data == MAP_FAILED) {
-	    fprintf(stderr, "Something went wrong while opening a file.\n");
-	    return -1;
-	}
-	printf("%s %8X\n", file_names[i], crc32(0, file_data, st.st_size));
-        ret = munmap(file_data, st.st_size);
-        if (ret != 0) {
-	    fprintf(stderr, "Something went wrong while opening a file.\n");
-	    return -1;
-	}	    
-	close(fd);
-    }	
-
-    // Close the directory stream
-    ret = closedir(dir_stream);
-    if (ret != 0) {
-	fprintf(stderr, "Something went wrong with closing %s.\n", dir_path);
+    errno = 0;
+    path = get_path(dir_path, file_name);
+    ret = stat(path, &st);	
+    // File is empty - nothing to checksum
+    if (st.st_size < 1) {
+	printf("%s 00000000\n", file_name);
+	return;
     }
-    
-    return 0;
+    fd = open(path, O_RDONLY, 0);
+    // Access to the file denied
+    if (errno != 0) {
+	printf("%s ACCESS ERROR\n", file_name);
+	return;
+    }
+    if (fd == 0 || ret == -1) {
+	fprintf(stderr, "Something went wrong while opening a file.\n");
+	exit(-1);
+    }
+    file_data = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE | MAP_POPULATE, fd, 0);
+    if (file_data == MAP_FAILED) {
+	fprintf(stderr, "Something went wrong while opening a file.\n");
+	exit(-1);
+    }
+    printf("%s %8X\n", file_name, crc32(0, file_data, st.st_size));
+    ret = munmap(file_data, st.st_size);
+    if (ret != 0) {
+	fprintf(stderr, "Something went wrong while opening a file.\n");
+	exit(-1);
+    }	    
+    close(fd);
 }
 
 /*-
@@ -198,42 +248,4 @@ crc32(uint32_t crc, const void *buf, size_t size)
 		crc = crc32_tab[(crc ^ *p++) & 0xFF] ^ (crc >> 8);
 
 	return crc ^ ~0U;
-}
-
-/* Selection sort on an array of strings using strcmp 
- * */
-void string_sort(char *arr[], int len) {	
-    int i, j, min_index = 0;
-    char *tmp;
-    for (i = 0; i < len-1; i++) {
-	min_index = i;
-	for (j = i+1; j < len; j++) {
-	    if (strcmp(arr[j], arr[min_index]) < 0)
-		min_index = j;
-	}
-	if (min_index != i) {
-	    tmp = arr[i];
-	    arr[i] = arr[min_index];
-	    arr[min_index] = tmp;
-	}
-    }
-}
-
-/* Given a directory and a file name, returns a path to that file.
- * If the directory name doesn't contain a trailing '/', one is added. 
- * */
-char *get_path(char *dir, char *file_name) {
-    if (dir[strlen(dir)] == '/') {
-        char *path = malloc(strlen(dir) + strlen(file_name) + 1);
-	strcpy(path, dir);
-	strcat(path, file_name);
-	return path;
-    }
-    else {
-        char *path = malloc(strlen(dir) + strlen(file_name) + 2);
-	strcpy(path, dir);
-	strcat(path, "/");
-	strcat(path, file_name);
-	return path;
-    }
 }
