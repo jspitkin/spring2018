@@ -1,18 +1,101 @@
 /* author: jake pitkin
- * last edit: april 25 2018
+ * last edit: april 26 2018
  * assignment 5 - problem 2
  * cs5460 - operating systems
  */
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
+#include <dirent.h>
+#include <errno.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <unistd.h>
+
+uint32_t crc32(uint32_t crc, const void *buf, size_t size);
+void string_sort(char *arr[], int len);
+char *get_path(char *dir, char *file_name);
 
 int main(int argc, char *argv[]) {
     // Validate input
     if (argc != 2) {
 	fprintf(stderr, "Invalid number of arguments.\n");
+	return -1;
     }
-    dir_path = argv[1];
+    char *dir_path = argv[1];
+
+    // Open directory
+    DIR *dir_stream = opendir(dir_path);
+    if (dir_stream == NULL) {
+	fprintf(stderr, "Directory %s could not be found or opened.\n", dir_path);
+	return -1;
+    }
+
+    // Read and store the file names
+    char **file_names = NULL;
+    int file_count = 0;
+    struct dirent *entry;
+    errno = 0;
+    while ((entry = readdir(dir_stream)) != NULL) {
+	if (entry->d_type == DT_REG) {
+	    file_names = (char**) realloc(file_names, (file_count+1)*sizeof(*file_names));
+	    file_names[file_count] = entry->d_name;
+	    file_count++;
+	}
+    }
+    if (errno != 0) {
+	fprintf(stderr, "Something went wrong while traversing %s.\n", dir_path);
+	return -1;
+    }
+
+    // Sort the file names
+    string_sort(file_names, file_count);
+
+    struct stat st;
+    int fd, ret;
+    void *file_data;
+    char *path;
+    for (int i = 0; i < file_count; i++) {
+        errno = 0;
+	path = get_path(dir_path, file_names[i]);
+        ret = stat(path, &st);	
+	// File is empty
+	if (st.st_size < 1) 
+	    continue;
+	fd = open(path, O_RDONLY, 0);
+	// Access to the file denied
+	if (errno == 13) {
+	    printf("%s ACCESS ERROR\n", file_names[i]);
+	    continue;
+	}
+	if (fd == -1 || ret == -1) {
+	    fprintf(stderr, "Something went wrong while opening a file.\n");
+	    return -1;
+	}
+	file_data = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE | MAP_POPULATE, fd, 0);
+	if (file_data == MAP_FAILED) {
+	    fprintf(stderr, "Something went wrong while opening a file.\n");
+	    return -1;
+	}
+	printf("%s %8X\n", file_names[i], crc32(0, file_data, st.st_size));
+        ret = munmap(file_data, st.st_size);
+        if (ret != 0) {
+	    fprintf(stderr, "Something went wrong while opening a file.\n");
+	    return -1;
+	}	    
+	close(fd);
+    }	
+
+    // Close the directory stream
+    ret = closedir(dir_stream);
+    if (ret != 0) {
+	fprintf(stderr, "Something went wrong with closing %s.\n", dir_path);
+    }
+    
     return 0;
 }
 
@@ -57,10 +140,6 @@ int main(int argc, char *argv[]) {
  *
  * CRC32 code derived from work by Gary S. Brown.
  */
-
-#include <sys/param.h>
-#include <sys/systm.h>
-
 static uint32_t crc32_tab[] = {
 	0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f,
 	0xe963a535, 0x9e6495a3,	0x0edb8832, 0x79dcb8a4, 0xe0d5e91e, 0x97d2d988,
@@ -119,4 +198,42 @@ crc32(uint32_t crc, const void *buf, size_t size)
 		crc = crc32_tab[(crc ^ *p++) & 0xFF] ^ (crc >> 8);
 
 	return crc ^ ~0U;
+}
+
+/* Selection sort on an array of strings using strcmp 
+ * */
+void string_sort(char *arr[], int len) {	
+    int i, j, min_index = 0;
+    char *tmp;
+    for (i = 0; i < len-1; i++) {
+	min_index = i;
+	for (j = i+1; j < len; j++) {
+	    if (strcmp(arr[j], arr[min_index]) < 0)
+		min_index = j;
+	}
+	if (min_index != i) {
+	    tmp = arr[i];
+	    arr[i] = arr[min_index];
+	    arr[min_index] = tmp;
+	}
+    }
+}
+
+/* Given a directory and a file name, returns a path to that file.
+ * If the directory name doesn't contain a trailing '/', one is added. 
+ * */
+char *get_path(char *dir, char *file_name) {
+    if (dir[strlen(dir)] == '/') {
+        char *path = malloc(strlen(dir) + strlen(file_name) + 1);
+	strcpy(path, dir);
+	strcat(path, file_name);
+	return path;
+    }
+    else {
+        char *path = malloc(strlen(dir) + strlen(file_name) + 2);
+	strcpy(path, dir);
+	strcat(path, "/");
+	strcat(path, file_name);
+	return path;
+    }
 }
