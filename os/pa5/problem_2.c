@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
 }
 
 
-/* Selection sort on an array of strings using strcmp 
+/* Selection sort on an array of strings using strcmp.
  * */
 void string_sort(char *arr[], int len) {	
     int i, j, min_index = 0;
@@ -112,6 +112,11 @@ char *get_path(char *dir_path, char *file_name) {
     }
 }
 
+/* Performs crc32 checksum on the contents of a file.
+ * If the file is empty, a checksum of "00000000" is returned.
+ * If the file can't be accessed, "ACCESS ERROR" is returned.
+ * The file name as well as it's checksum are printed to stdout.
+ * */
 void print_file_checksum(char *dir_path, char *file_name) {
     struct stat st;
     int fd, ret;
@@ -140,7 +145,7 @@ void print_file_checksum(char *dir_path, char *file_name) {
 	fprintf(stderr, "Something went wrong while opening a file.\n");
 	exit(-1);
     }
-    printf("%s %8X\n", file_name, crc32(0, file_data, st.st_size));
+    printf("%s %08X\n", file_name, crc32(0, file_data, st.st_size));
     ret = munmap(file_data, st.st_size);
     if (ret != 0) {
 	fprintf(stderr, "Something went wrong while opening a file.\n");
