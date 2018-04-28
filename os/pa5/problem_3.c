@@ -15,12 +15,21 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <unistd.h>
+#include <pthread.h>
 
 uint32_t crc32(uint32_t crc, const void *buf, size_t size);
 void string_sort(char *arr[], int len);
-char *get_path(char *dir_path, char *file_name);
-void file_checksum(char *dir_path, char **file_names, int index);
+char *get_path(char *file_name);
+void file_checksum(int index);
 char *str_join(char *s1, char *s2);
+void *routine(void *args);
+
+volatile int file_count = 0;
+volatile int next_index = 0;
+char *dir_path;
+char **file_names;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
 int main(int argc, char *argv[]) {
     // Validate input
@@ -28,10 +37,17 @@ int main(int argc, char *argv[]) {
 	fprintf(stderr, "Invalid number of arguments.\n");
 	return -1;
     }
-    char *dir_path = argv[1];
+    dir_path = argv[1];
     int n_threads = strtol(argv[2], NULL, 10);
     if (n_threads < 1 || n_threads > 99) {
 	fprintf(stderr, "Invalid number of threads. Expecting [1, 99].\n");
+	return -1;
+    }
+
+    // Allocate threads
+    pthread_t *threads = (pthread_t*) malloc(n_threads*sizeof(pthread_t));
+    if (threads == NULL) {
+	fprintf(stderr, "Error allocating thread memory.\n");
 	return -1;
     }
 
@@ -42,27 +58,45 @@ int main(int argc, char *argv[]) {
 	return -1;
     }
 
+    // Checksum each file using n_threads
+    int i, ret;
+    for (i = 0; i < n_threads; i++) {
+	ret = pthread_create(&threads[i], NULL, routine, NULL);
+	if (ret != 0) {
+	    fprintf(stderr, "Error creating thread.\n");
+	    return -1;
+	}
+    }
+
     // Read and store the file names
-    char **file_names = NULL;
-    int file_count = 0;
+    file_count = 0;
     struct dirent *entry;
     errno = 0;
     while ((entry = readdir(dir_stream)) != NULL) {
 	if (entry->d_type == DT_REG) {
+	    // add a new file to be checksummed by the workers
+	    pthread_mutex_lock(&mutex);
 	    file_names = (char**) realloc(file_names, (file_count+1)*sizeof(*file_names));
 	    file_names[file_count] = entry->d_name;
 	    file_count++;
+	    pthread_cond_broadcast(&cond);
+	    pthread_mutex_unlock(&mutex);
 	}
     }
-    if (errno != 0) {
+    int traverse_errno = errno;
+    file_checksum(file_count-1);
+    if (traverse_errno != 0) {
 	fprintf(stderr, "Something went wrong while traversing %s.\n", dir_path);
 	return -1;
     }
 
-    // Checksum each file and print to stdout
-    int i;
-    for (i = 0; i < file_count; i++) {
-	file_checksum(dir_path, file_names, i); 
+    // Join the threads
+    for (i = 0; i < n_threads; i++) {
+	ret = pthread_join(threads[i], NULL);
+	if (ret != 0) {
+	    fprintf(stderr, "Error joining thread.\n");
+	    return -1;
+	}
     }
 
     // Sort the file names
@@ -74,12 +108,13 @@ int main(int argc, char *argv[]) {
     }
 
     // Close the directory stream
-    int ret = closedir(dir_stream);
+    ret = closedir(dir_stream);
     if (ret != 0) {
 	fprintf(stderr, "Something went wrong with closing %s.\n", dir_path);
 	return -1;
     }
-    
+
+    free(threads);
     return 0;
 }
 
@@ -106,7 +141,7 @@ void string_sort(char *arr[], int len) {
 /* Given a directory and a file name, returns a path to that file.
  * If the directory name doesn't contain a trailing '/', one is added. 
  * */
-char *get_path(char *dir_path, char *file_name) {
+char *get_path(char *file_name) {
     if (strlen(dir_path) == 0) 
 	return file_name;
     else if (dir_path[strlen(dir_path)] == '/') {
@@ -134,18 +169,18 @@ char *str_join(char *s1, char *s2) {
     return s3;
 }
 
-/* Performs crc32 checksum on the contents of a file.
- * If the file is empty, a checksum of "00000000" is returned.
- * If the file can't be accessed, "ACCESS ERROR" is returned.
- * The file name as well as it's checksum are printed to stdout.
+/* Performs crc32 checksum on the contents of a file and 
+ * appends it to the file name.
+ * If the file is empty, a checksum of "00000000" is appended.
+ * If the file can't be accessed, "ACCESS ERROR" is appended.
  * */
-void file_checksum(char *dir_path, char **file_names, int index) {
+void file_checksum(int index) {
     struct stat st;
     int fd, ret;
     void *file_data;
     char *path;
     errno = 0;
-    path = get_path(dir_path, file_names[index]);
+    path = get_path(file_names[index]);
     ret = stat(path, &st);	
     // File is empty - nothing to checksum
     if (st.st_size < 1) {
@@ -158,6 +193,7 @@ void file_checksum(char *dir_path, char **file_names, int index) {
     if (errno != 0) {
 	char access_error[12] = "ACCESS ERROR";
 	file_names[index] = str_join(file_names[index], access_error);
+	close(fd);
 	return;
     }
     if (fd == 0 || ret == -1) {
@@ -179,6 +215,25 @@ void file_checksum(char *dir_path, char **file_names, int index) {
 	exit(-1);
     }	    
     close(fd);
+}
+
+/* Worker routine. While there are more files to checksum
+ * an available worker will take the file name and update it
+ * with its checksum.
+ * */
+void *routine(void *args) {
+    while(file_count != next_index+1) {
+	pthread_mutex_lock(&mutex);
+	while (next_index >= file_count)
+	    pthread_cond_wait(&cond, &mutex);
+	if (next_index+1 != file_count) {
+	    file_checksum(next_index);
+	    next_index++;
+	}
+	pthread_cond_broadcast(&cond);
+	pthread_mutex_unlock(&mutex);
+    }
+    return NULL;
 }
 
 /*-
