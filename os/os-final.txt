@@ -1,0 +1,80 @@
+general
+---------
+multiple choice
+no questions on semaphores
+mutex = blocking lock, not busy waiting
+spin lock is a lock where you spin and keep checking the lock (called busy waiting)
+
+threads
+---------
+each thread has a stack
+process shares a heap and data center
+all threads share one virtual memory space
+threads can share pointers into their stacks but it's not advised
+stack allocated on pthread_create
+
+synchronization
+---------
+preemptive thread scheduling and multicore execution are both a problem
+context switch can occur at any time, even in the middle of a line of code
+unit of atomicity ----> machine instruction
+processes can't really control the OS run policy
+mutex can be used to interact with the thread scheduler
+you are not eligible to run when someone has a lock on the data structure you need
+when you release the mutex it will pick someone off the wait queue and schedule them
+race condition: correctness of program depends on timing of the execution of the program
+data race: some shared state and multiple threads are trying to access it at the same time
+    and one is trying to do a write
+    undetermined what the reader will see
+    a race condition can lead to a data race
+    don't ever write them into your programs
+    you can have a data race that doesn't cause a race condition (..then causes a bug down the road)
+synchronization or concurrency control: using atomic operations to eliminate race conditions
+critical section: code that must run atomically (ATM balance update)
+mutual exclusion: ensure at most one process at a time
+lock: sunc mechanism that enforces atomicity via mutual exclusion
+    Lock(L): if L is not currently locked --> atomically lock it
+             if L is currently locked --> block until it becomes free
+    Unlock(L): release control of L
+    Lock "protects" data: Lock(L) before accessing, Unlock(L) when done
+
+
+locks
+------
+mutual exclusion: only one process/thread is in critical section at a time
+progress: given an infinite amount of time, processes/threads 
+    will enter the critical section an infinite number of times
+bounded waiting: no process/thread waits forever to enter critical section
+    given an infinite amount of time, every process/thread will eventually enter the critical section
+    no starvation
+spin locks: scheduler doesn't know about spin-locks, so it makes bad choices
+    don't behave well when there are more waiters than cores on the machine (spin for the entire quantum)
+    Fetch&Add (ticket locks) are spin locks
+    yield improves performance
+blocking lock (pthread mutexs): 
+    have to keep track (queue) of who is sleeping on a lock so we can wake them up
+    'guard' variable is used to ensure mutual exclusion access of the queue state
+    waking a thread up is telling the os a given thread is now eligible to run
+yield: give up your quantum but ready to be scheduled again
+sleep/park(): go to sleep until it is possible to acquire the lock
+race condition with 'guard' variable if a thread called unpark before the other can call park
+condition variables: we want to wait for some application state to be true
+    queue of threads waiting on "event" inside of critical section
+    a condition variable is always paired with a lock
+    cond_wait: atomically release lock and go to sleep.
+        when thread wakes up, it atomically reacquires the lock
+        put onto CV-specific wait list
+    cond_signal: wake up thread waiting on event, no-op if no one is waiting
+    cond_broadcast: wake up all threads waiting on event, no-op if no one is waiting
+    spurious wakeup: can get woken up even if someone hasn't signaled you
+        need to put cond_wait in while-block rather than using an if-statement
+        
+filesystem consistency
+-------
+disk sectors are 512 bytes
+blocks are 4 KB (8 sectors)
+fsck is a program - run before OS mounts a filesystem if might be inconsist state
+    if filesystem shuts down without setting "mounted" to 0 - run fsck
+    slow - reads the entire filesystem and checks the metadata for invariants
+
+

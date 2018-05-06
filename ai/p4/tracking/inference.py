@@ -465,29 +465,31 @@ class JointParticleFilter:
             return
         emissionModels = [busters.getObservationDistribution(dist) for dist in noisyDistances]
 
+        # Ghosts that have been captured
+        ghostList = range(self.numGhosts)
+        captured = list(filter(lambda x: noisyDistances[x] == None, ghostList))
+
+        beliefDistribution = util.Counter()
+        for particle in self.particles:
+            # Set captured ghosts
+            for ghost in captured:
+                particle = self.getParticleWithGhostInJail(particle, ghost)
+            prob = 1
+            # Consider uncaptured ghosts
+            for i in list(set(ghostList)-set(captured)):
+                prob *= emissionModels[i][util.manhattanDistance(particle[i], pacmanPosition)]
+            beliefDistribution[particle] += prob
+        beliefDistribution.normalize()
         
-        # Ghost has been captured
-        #if noisyDistance == None:
-        #    self.particles = [self.getJailPosition() for _ in range(self.numParticles)]
-        #    return
-
-        for i in range(self.numGhosts):
-            # Update belief distribution
-            beliefDistribution = self.getBeliefDistribution()
-            for p in self.legalPositions:
-                trueDistance = util.manhattanDistance(p, pacmanPosition)
-                beliefDistribution[p] *= emissionModels[i][trueDistance]
-
-            # Check if all particles received a weight of 0
-            if beliefDistribution.totalCount() == 0:
-                # Resample with a uniform distribution
-               self.initializeUniformly(gameState) 
-            else:
-                # Resample with new distribution
-                self.particles = util.nSample(beliefDistribution.values(),
+        # Check if all particles received a weight of 0
+        if beliefDistribution.totalCount() == 0:
+            # Resample with a uniform distribution
+           self.initializeParticles() 
+        else:
+            # Resample with new distribution
+            self.particles = util.nSample(beliefDistribution.values(),
                                               beliefDistribution.keys(),
                                               self.numParticles)
-
 
     def getParticleWithGhostInJail(self, particle, ghostIndex):
         """
@@ -543,13 +545,15 @@ class JointParticleFilter:
               agents are always the same.
         """
         newParticles = []
+        ghostList = range(self.numGhosts)
         for oldParticle in self.particles:
             newParticle = list(oldParticle) # A list of ghost positions
+            #oldPos = list(oldParticle)
             # now loop through and update each entry in newParticle...
-
-            "*** YOUR CODE HERE ***"
-
-            "*** END YOUR CODE HERE ***"
+            for ghost in ghostList:
+                gameState = setGhostPositions(gameState, newParticle)
+                newPosDist = getPositionDistributionForGhost(gameState, ghost, self.ghostAgents[ghost])
+                newParticle[ghost] = util.sample(newPosDist)
             newParticles.append(tuple(newParticle))
         self.particles = newParticles
 
